@@ -1,7 +1,7 @@
 /**
  * Deterministic state machine for the playground. Pure: no timers, no DOM, no I/O.
  *
- * The main talk validates a clean install; manifest failure and Unicode scanning are optional:
+ * The main talk validates a clean install, then shows an incomplete change fail CI and recover; Unicode scanning is optional:
  * - "lockfile-generated": `apm install` writes apm.lock.yaml; this state means the audience has inspected it.
  * - "security-warning": the hidden-character scan found a problem in a demo file.
  * - "manifest-edited": a dependency was added without installing it; CI has not run yet.
@@ -59,7 +59,7 @@ const TRANSITIONS: Readonly<Record<DemoState, Partial<Record<DemoActionType, Dem
   "manifest-edited": { runCI: "ci-failed" },
   // Re-running CI on a red build keeps it red; the fix is a separate action.
   "ci-failed": { runCI: "ci-failed", fixManifest: "ci-passed" },
-  // After success, the presenter can optionally introduce a manifest mismatch.
+  // After success, the presenter introduces an incomplete dependency change.
   "ci-passed": { runCI: "ci-passed", addDependency: "manifest-edited" },
 };
 
@@ -70,7 +70,7 @@ const HINTS: Readonly<Record<DemoState, string>> = {
   "security-warning": "Run CI checks on the installed configuration. The Unicode fixture is separate.",
   "manifest-edited": "The manifest changed; the lockfile did not. Run CI checks to detect the mismatch.",
   "ci-failed": "CI is red. Fix the manifest and re-run CI.",
-  "ci-passed": "Configuration checks passed. Reset the demo or open the optional failure example.",
+  "ci-passed": "Configuration checks passed. Add a dependency without installing it to see CI catch the mismatch.",
 };
 
 export function transition(state: DemoState, action: DemoAction): TransitionResult {

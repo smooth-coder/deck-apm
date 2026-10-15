@@ -2,52 +2,32 @@ import { useState } from "react";
 import { SceneView } from "../components/SceneView/SceneView";
 import {
   CLOSING_QUOTE,
-  DOES_NOT_SOLVE_TITLE,
-  doesNotSolve,
-  SOLVES_TITLE,
-  solves,
+  PIPELINE_CAPTION,
+  PIPELINE_TITLE,
   TAKEAWAY_FOOTER,
   TAKEAWAY_TITLE,
   takeawaySteps,
 } from "../data/delivery";
+import { PipelineVisualizer } from "../components/PipelineVisualizer";
 import { scenes } from "../data/presentation";
 
 const scene = scenes[5];
 
 export function SoftwareDeliveryScene() {
-  const [view, setView] = useState<"scope" | "adoption">("scope");
+  const [view, setView] = useState<"pipeline" | "adoption">("pipeline");
   if (!scene) return null;
   return (
     <SceneView scene={scene} compact>
       <div className="delivery__views" role="group" aria-label="Detalle del cierre">
-        <button type="button" className="btn" aria-pressed={view === "scope"} onClick={() => setView("scope")}>
-          Alcance de APM
+        <button type="button" className="btn" aria-pressed={view === "pipeline"} onClick={() => setView("pipeline")}>
+          {PIPELINE_TITLE}
         </button>
         <button type="button" className="btn" aria-pressed={view === "adoption"} onClick={() => setView("adoption")}>
           {TAKEAWAY_TITLE}
         </button>
       </div>
-      {view === "scope" ? (
-        <>
-          <div className="scope">
-            <section className="scope__col" aria-label={SOLVES_TITLE}>
-              <h2 className="scope__title">{SOLVES_TITLE}</h2>
-              <ul>
-                {solves.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </section>
-            <section className="scope__col scope__col--limits" aria-label={DOES_NOT_SOLVE_TITLE}>
-              <h2 className="scope__title">{DOES_NOT_SOLVE_TITLE}</h2>
-              <ul>
-                {doesNotSolve.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </section>
-          </div>
-        </>
+      {view === "pipeline" ? (
+        <PipelineVisualizer caption={PIPELINE_CAPTION} />
       ) : (
         <aside className="closing__takeaway" aria-label={TAKEAWAY_TITLE}>
           <h2 className="closing__takeaway-title">{TAKEAWAY_TITLE}</h2>

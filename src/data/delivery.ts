@@ -1,18 +1,40 @@
-export const SOLVES_TITLE = "Qué resuelve APM";
-export const DOES_NOT_SOLVE_TITLE = "Qué no resuelve";
+export type ApmCoverage = "apm" | "yours";
 
-export const solves: readonly string[] = [
-  "Configuración compartida entre personas y proyectos",
-  "Versión declarada en apm.yml",
-  "Archivos instalados inspeccionables en apm.lock.yaml",
-  "Consistencia comprobada en CI con apm audit --ci",
+export interface PipelineStep {
+  readonly label: string;
+  /** One line (max ~25 words) saying what is checked at this step. */
+  readonly check: string;
+  /** Configuration tooling versus the team's delivery responsibility. */
+  readonly coverage: ApmCoverage;
+}
+
+export const COVERAGE_LABEL: Readonly<Record<ApmCoverage, string>> = {
+  apm: "APM",
+  yours: "EQUIPO",
+};
+
+export const PIPELINE_TITLE = "Pipeline de entrega";
+
+export const pipelineSteps: readonly PipelineStep[] = [
+  {
+    label: "Configuración",
+    check: "Instala la configuración revisada del agente; apm audit --ci comprueba que el manifiesto y apm.lock.yaml coinciden.",
+    coverage: "apm",
+  },
+  {
+    label: "Validación",
+    check: "Pruebas del producto y evaluaciones del agente con tareas fijas, registrando modelo y configuración.",
+    coverage: "yours",
+  },
+  {
+    label: "Revisión y publicación",
+    check: "Revisión humana del código, compilación y controles de publicación habituales.",
+    coverage: "yours",
+  },
 ];
 
-export const doesNotSolve: readonly string[] = [
-  "No hace determinista al modelo",
-  "No valida el código que produce el agente: lo validan las pruebas, las evaluaciones y la revisión humana",
-  "No sustituye la revisión antes de publicar",
-];
+export const PIPELINE_CAPTION =
+  "APM cubre el primer paso: la configuración. El equipo es dueño del resto. Las huellas verifican integridad, no seguridad, y APM no aísla al agente ni evalúa el código.";
 
 export const TAKEAWAY_TITLE = "Cómo empezar";
 
@@ -20,7 +42,7 @@ export const takeawaySteps: readonly { readonly command: string; readonly note: 
   { command: "pip install apm-cli==0.33.0", note: "Python 3.10+, preferiblemente en un entorno virtual" },
   { command: "apm init", note: "crea apm.yml; después declara el repositorio y la versión del equipo" },
   { command: "apm install", note: "también instala la configuración MCP del repositorio directo" },
-  { command: "apm audit --ci", note: "código 0: pasa; código 1: falla" },
+  { command: "apm audit --ci", note: "añádelo como comprobación obligatoria en CI: código 0 pasa, código 1 falla" },
 ];
 
 export const TAKEAWAY_FOOTER = "Cada proyecto fija una referencia Git revisada de la versión del equipo.";

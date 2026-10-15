@@ -113,6 +113,11 @@ export function AgentLab() {
     { id: "install", label: "Install", title: "Run apm install" },
     { id: "inspect", label: "Inspect Lockfile", title: "Read apm.lock.yaml" },
     {
+      id: "edit",
+      label: "Add dependency without installing",
+      title: "Add an example dependency to apm.yml without installing it or updating the lockfile",
+    },
+    {
       id: "ci",
       label: state === "ci-failed" ? "Fix manifest & re-run CI" : "Run CI checks",
       title: state === "ci-failed" ? "Remove the added dependency and run apm audit --ci" : state === "manifest-edited" ? "Run apm audit --ci and apm install --frozen" : "Run apm audit --ci",
@@ -170,18 +175,6 @@ export function AgentLab() {
       ) : null}
 
       <ActionBar buttons={buttons} onPress={press} />
-      <details className="lab__backup">
-        <summary>Optional: show an incomplete dependency change</summary>
-        <button
-          type="button"
-          className="btn"
-          disabled={playing || !canRun(state, "addDependency")}
-          title="After successful CI, add an example dependency to apm.yml without installing it or updating the lockfile"
-          onClick={() => press("edit")}
-        >
-          Add dependency without installing
-        </button>
-      </details>
       <details className="lab__backup">
         <summary>Backup: Unicode scan and scope limits</summary>
         <button

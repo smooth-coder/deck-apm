@@ -2,11 +2,11 @@ import { TOTAL_DURATION_MIN, scenes } from "./presentation";
 import { developers, sharedTask, teamCosts } from "./agentConfigs";
 import { hookLines, missingPieces } from "./hook";
 import { analogyRows } from "./apm";
-import { CLOSING_QUOTE, TAKEAWAY_TITLE, takeawaySteps, solves, doesNotSolve } from "./delivery";
+import { CLOSING_QUOTE, TAKEAWAY_TITLE, takeawaySteps, pipelineSteps } from "./delivery";
 
 it("reserves seven minutes of the 20-minute slot for questions or overrun", () => {
   expect(scenes).toHaveLength(6);
-  expect(TOTAL_DURATION_MIN).toBe(13);
+  expect(TOTAL_DURATION_MIN).toBe(14);
   expect(scenes.at(-1)?.durationMin).toBe(2);
 });
 
@@ -33,8 +33,7 @@ it("keeps scene 3 to the promise: no lockfile or CI rows", () => {
 });
 
 it("closes by separating what APM solves from what it does not", () => {
-  expect(solves.length).toBeGreaterThan(0);
-  expect(doesNotSolve.length).toBeGreaterThan(0);
+  expect(pipelineSteps.length).toBe(3);
   expect(CLOSING_QUOTE).toBe("El próximo dev clona el repo y su agente ya trabaja como el equipo.");
   expect(TAKEAWAY_TITLE).toBe("Cómo empezar");
   expect(takeawaySteps[1]?.note).toBe("crea apm.yml; después declara el repositorio y la versión del equipo");

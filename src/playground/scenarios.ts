@@ -1,7 +1,7 @@
 import type { DemoActionType, DemoState } from "./demoEngine";
 import { DEFAULT_FILE_PATH, HIDDEN_CHARS_PATH, LOCKFILE_PATH, MANIFEST_PATH } from "./virtualFileSystem";
 
-/** Main controls plus optional manifest-failure and Unicode examples. */
+/** Main controls (including the CI failure path) plus an optional Unicode example. */
 export type ButtonId = "install" | "inspect" | "edit" | "security" | "ci" | "reset";
 
 export interface DemoStep {
@@ -9,14 +9,14 @@ export interface DemoStep {
   readonly from: DemoState;
   readonly action: DemoActionType;
   readonly button: ButtonId;
-  /** Presenter-only timing within the three-minute consumer demo. */
+  /** Presenter-only timing within the four-minute consumer demo. */
   readonly minute: string;
   readonly title: string;
   /** File the viewer selects after the step runs. */
   readonly focusFile: string;
 }
 
-/** Main three-minute path ends at successful CI without introducing a failure. */
+/** Main four-minute path: install, inspect, pass CI, break it with an incomplete change, fix it. */
 export const demoSteps: readonly DemoStep[] = [
   {
     from: "initial",
@@ -38,8 +38,32 @@ export const demoSteps: readonly DemoStep[] = [
     from: "lockfile-generated",
     action: "runCI",
     button: "ci",
-    minute: "1:45 - 2:30",
+    minute: "1:45 - 2:15",
     title: "Run CI checks",
+    focusFile: MANIFEST_PATH,
+  },
+  {
+    from: "ci-passed",
+    action: "addDependency",
+    button: "edit",
+    minute: "2:15 - 2:40",
+    title: "Add dependency without installing",
+    focusFile: MANIFEST_PATH,
+  },
+  {
+    from: "manifest-edited",
+    action: "runCI",
+    button: "ci",
+    minute: "2:40 - 3:20",
+    title: "Run CI checks (fails)",
+    focusFile: MANIFEST_PATH,
+  },
+  {
+    from: "ci-failed",
+    action: "fixManifest",
+    button: "ci",
+    minute: "3:20 - 3:50",
+    title: "Fix manifest & re-run CI",
     focusFile: MANIFEST_PATH,
   },
 ];
@@ -57,7 +81,7 @@ export const demoResults: Readonly<Record<Exclude<DemoState, "initial">, string>
 
 /** The next recommended step from a state, or undefined once the demo is complete. */
 export const nextStep = (state: DemoState): DemoStep | undefined =>
-  demoSteps.find((s) => s.from === (state === "security-warning" || state === "manifest-edited" ? "lockfile-generated" : state));
+  demoSteps.find((s) => s.from === (state === "security-warning" ? "lockfile-generated" : state));
 
 /** File the viewer should show after an action lands in `to`. */
 export function focusFileAfter(action: DemoActionType, from: DemoState): string {

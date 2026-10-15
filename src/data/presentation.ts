@@ -11,29 +11,34 @@ export interface Scene {
   readonly durationMin: number;
 }
 
+export const TALK_TITLE = "El agente también es una dependencia";
+export const TALK_SUBTITLE =
+  "Entrega de software con IA: versionar, bloquear y validar la configuración del agente";
+export const TALK_THESIS = "La configuración del agente es parte de tu entrega: versiónala, bloquéala y valídala en CI.";
+
 export const scenes: readonly Scene[] = [
   {
     id: 1,
-    title: "Clonar el repositorio no trae el contexto del equipo.",
+    title: "Entregamos con agentes, pero su configuración no pasa por el pipeline.",
     support:
-      "El código se instala y se ejecuta. El agente no conoce las convenciones, los procedimientos ni las conexiones de herramientas del equipo.",
-    goal: "Plantear el problema único: una persona nueva clona, instala y ejecuta, pero su agente no tiene el contexto del equipo y cada persona lo reconstruye a mano.",
+      "Una persona nueva clona el repositorio: el código se instala y se ejecuta, pero su agente no tiene las reglas, los procedimientos ni las conexiones del equipo.",
+    goal: "Plantear el problema único de entrega: el código llega con su lockfile y su CI, pero la configuración del agente (instrucciones, habilidades, MCP) no se versiona ni se valida; cada persona la reconstruye a mano.",
     durationMin: 2,
   },
   {
     id: 2,
-    title: "Mismo repositorio. Distinta configuración en cada agente.",
+    title: "Mismo pipeline. Dos configuraciones de agente distintas.",
     support:
-      "Alice tiene reglas, un procedimiento y una conexión MCP en el repositorio. Bob tiene reglas copiadas en su laptop y nada más.",
-    goal: "Premisa central: dos personas, mismo repositorio y mismo agente, con reglas, habilidades y MCP distintos. Presentar el coste de la deriva de configuración sin prometer resultados deterministas.",
+      "Alice trabaja con reglas, un procedimiento y una conexión MCP del repositorio. Bob, con reglas copiadas en su laptop. Lo que se entrega depende de qué laptop produjo el cambio.",
+    goal: "Premisa central: dos personas, mismo repositorio, mismo pipeline y mismo agente, con configuraciones distintas. Lo que llega al pipeline depende de la laptop de origen. Sin prometer resultados deterministas.",
     durationMin: 2,
   },
   {
     id: 3,
-    title: "El equipo publica una versión. Cada proyecto elige cuál usar.",
+    title: "La configuración del agente, tratada como dependencia.",
     support:
-      "APM (Agent Package Manager) empaqueta las definiciones del equipo. Cada proyecto declara en apm.yml qué paquete y versión utiliza.",
-    goal: "Presentar APM solo como la promesa: el equipo es dueño de las definiciones y publica una versión; cada proyecto declara cuál usa. El archivo de bloqueo y la auditoría en CI se muestran en la escena 5.",
+      "APM (Agent Package Manager) la declara en apm.yml, el equipo la versiona y apm.lock.yaml la bloquea. Cada proyecto elige qué versión usa.",
+    goal: "Presentar APM solo como la promesa: la configuración del agente se trata como una dependencia (declarada, versionada, bloqueada). El archivo de bloqueo y la auditoría en CI se muestran en la escena 5.",
     durationMin: 2,
   },
   {
@@ -45,17 +50,17 @@ export const scenes: readonly Scene[] = [
   },
   {
     id: 5,
-    title: "Usa la versión del equipo en tu proyecto.",
-    support: "Declara el repositorio en apm.yml. Instala la configuración compartida para Claude y Copilot.",
-    goal: "Start with only the consumer manifest. Install the versioned package and inspect deployed files, lockfile and CI without showing the producer source tree.",
-    durationMin: 3,
+    title: "Usa la versión del equipo y deja que CI la valide.",
+    support: "Declara el repositorio en apm.yml, instala para Claude y Copilot, y comprueba en CI que lo instalado coincide con el manifiesto y el lockfile.",
+    goal: "Start with only the consumer manifest. Install the versioned package, inspect deployed files and lockfile, pass CI, then show an incomplete dependency change fail CI and the fix pass it, without showing the producer source tree.",
+    durationMin: 4,
   },
   {
     id: 6,
-    title: "Versiona la configuración del agente como versionas tus dependencias.",
+    title: "La configuración del agente es parte de tu entrega.",
     support:
-      "APM hace la configuración compartida, versionada e inspeccionable. Las pruebas, las evaluaciones y la revisión humana validan el código.",
-    goal: "Cierre breve: qué resuelve APM, qué no resuelve, cómo empezar y la frase final: el próximo dev clona el repo y su agente ya trabaja como el equipo.",
+      "Versiónala, bloquéala y valídala en CI. APM cubre el primer paso del pipeline; las pruebas, las evaluaciones y la revisión humana siguen siendo del equipo.",
+    goal: "Cierre: el pipeline de entrega con tres pasos, APM cubre la configuración y el equipo el resto; cómo empezar y la frase final: el próximo dev clona el repo y su agente ya trabaja como el equipo.",
     durationMin: 2,
   },
 ];
