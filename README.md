@@ -1,6 +1,6 @@
 # El contexto del agente también es una dependencia — APM
 
-**Entrega de software con IA: los agentes, skills y reglas del equipo, versionados como cualquier dependencia.** Charla de 20 minutos implementada como una aplicación React (Vite + TypeScript + Tailwind v4): **14 minutos de contenido + 6 minutos para preguntas**. Tesis: el contexto del agente es parte de tu entrega; versiónalo e instálalo como una dependencia más, y que CI lo verifique. Guion y tiempos: [`docs/talk-script.md`](docs/talk-script.md).
+**Entrega de software con IA: agentes, skills y reglas del equipo, versionados e instalados como dependencias.** Charla de 20 minutos implementada como una aplicación React (Vite + TypeScript + Tailwind v4): **14 minutos de contenido + 6 minutos para preguntas**. Tesis: el contexto del agente es parte de tu entrega; versiónalo e instálalo como una dependencia más, y que CI lo verifique. Guion y tiempos: [`docs/talk-script.md`](docs/talk-script.md).
 
 La narrativa, los controles de las diapositivas y las notas del presentador están en español. La demo, los ejemplos de código, los nombres de archivos y la salida real de la CLI permanecen en inglés. La página declara `lang="es"`; la demo y los ejemplos en inglés identifican su idioma.
 

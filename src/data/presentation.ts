@@ -13,7 +13,7 @@ export interface Scene {
 
 export const TALK_TITLE = "El contexto del agente también es una dependencia";
 export const TALK_SUBTITLE =
-  "Entrega de software con IA: los agentes, skills y reglas del equipo, versionados como cualquier dependencia";
+  "Entrega de software con IA: agentes, skills y reglas del equipo, versionados e instalados como dependencias";
 export const TALK_THESIS = "El contexto del agente es parte de tu entrega: versiónalo e instálalo como una dependencia más, y que CI lo verifique.";
 
 export const scenes: readonly Scene[] = [
