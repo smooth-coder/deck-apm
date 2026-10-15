@@ -48,7 +48,8 @@ Los documentos vivos pueden evolucionar; los archivos y resultados de la demo pr
 
 ## Presentación y límites
 
-- Narrativa y controles externos a los ejemplos en español; demo, código, rutas y salida CLI en inglés. Idioma raíz `es`, con idioma `en` identificado en la demo y ejemplos correspondientes.
+- Narrativa y controles externos a los ejemplos en español; demo, código, rutas y salida CLI en inglés. Idioma raíz `es`; los títulos de las diapositivas 5 y 6 están en español y no llevan `lang="en"`. El contenido de la demo (CLI, código, rutas) permanece en inglés.
+- La apertura plantea la configuración dispersa y la preparación manual del agente, no el nombre de la herramienta. No hay una historia de ticket: los ejemplos son convenciones del equipo, sin promesa de que APM evite errores del agente. APM se introduce con su nombre completo en la diapositiva 4.
 - Explorador a la izquierda y archivo o terminal a la derecha, también a 390 px de ancho. Seleccionar un archivo abre su vista automáticamente.
 - Sin instrucciones iniciales de relleno ni panel explicativo. Solo una acción completada muestra un resultado breve; el detalle se explica desde [`talk-script.md`](talk-script.md).
 - Gestionar el repositorio significa revisar definiciones, versionar y actualizar consumidores de forma intencional. No se ejercitaron publicación remota ni autenticación privada.
@@ -63,8 +64,10 @@ En navegador se recorrió la pantalla productora: vacío → init sin archivos a
 
 En escritorio (1280×720) y móvil (390×844) se ejercitó primero el recorrido limpio: Install → Inspect Lockfile → Run CI checks, con diez comprobaciones aprobadas y sin abrir la sección de fallo ni añadir su dependencia. Después se abrió el ejemplo opcional: edición visible → rechazo → recuperación. En escritorio se comprobó que la edición conservaba exactamente el contenido anterior del lockfile. Reset dejó solo el manifiesto original; también se comprobó durante Install. La rama Unicode pudo volver a CI limpio. No hubo errores de navegador ni desbordamiento horizontal de la página; el explorador sigue a la izquierda.
 
-Se revisó la narrativa española a 1280×720 y su adaptación a 390×844, sin desbordamiento horizontal de la página. En móvil, explorador y visor conservaron la misma coordenada vertical y columnas separadas; los archivos largos permiten desplazamiento dentro de sus paneles. La comprobación local de PAY-142 devolvió `PASS: 2 requests · 1 refund`, con `refund-1` en ambas respuestas.
+Se revisó la narrativa española a 1280×720 y su adaptación a 390×844, sin desbordamiento horizontal de la página. En móvil, explorador y visor conservaron la misma coordenada vertical y columnas separadas; los archivos largos permiten desplazamiento dentro de sus paneles. (Histórico: una versión anterior de la diapositiva 7 incluía una comprobación local de reembolsos; se eliminó.)
+
+La apertura centrada en el problema se inspeccionó a 1280×720 y 390×844: título, texto de apoyo, pregunta final y terminal ilustrativa visibles, sin desbordamiento horizontal de la página. Se ejercitaron Repetir y Saltar animación. (Histórico: una escena intermedia que nombraba las piezas se eliminó.) La escena 4 introduce Agent Package Manager con su función concreta. No se observaron errores de navegador.
 
 `bun --bun run build` completó TypeScript y Vite. No se agregaron pruebas ni se ejecutó la suite, conforme al foco solicitado en la demo funcional.
 
-Se mantienen 17 minutos de contenido y tres para preguntas. No es un ensayo humano cronometrado. No se muestra un QR provisional.
+Se mantienen 14 minutos de contenido y seis para preguntas. No es un ensayo humano cronometrado. No se muestra un QR provisional.
