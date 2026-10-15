@@ -1,14 +1,14 @@
-import { AgentLab } from "../components/AgentLab";
+import { ComparisonTable } from "../components/ComparisonTable";
 import { SceneView } from "../components/SceneView/SceneView";
 import { scenes } from "../data/presentation";
 
-const scene = scenes[4];
+const scene = scenes[3];
 
-export function PlaygroundScene() {
+export function APMMomentScene() {
   if (!scene) return null;
   return (
     <SceneView scene={scene} compact>
-      <AgentLab />
+      <ComparisonTable />
     </SceneView>
   );
 }

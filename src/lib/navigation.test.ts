@@ -62,7 +62,7 @@ describe("keyToAction", () => {
     expect(keyToAction("7", 6)).toBeNull();
     expect(keyToAction("0", 6)).toBeNull();
   });
-  it("maps P to the consumer demo (scene 5) case-insensitively", () => {
+  it("maps P to the consumer demo (scene 6) case-insensitively", () => {
     expect(keyToAction("p", 6)).toEqual({ type: "goto", index: 4 });
     expect(keyToAction("P", 6)).toEqual({ type: "goto", index: 4 });
   });

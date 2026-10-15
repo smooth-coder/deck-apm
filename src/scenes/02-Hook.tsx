@@ -14,7 +14,7 @@ import {
 import { scenes } from "../data/presentation";
 import { useStages } from "../hooks/useStages";
 
-const scene = scenes[0];
+const scene = scenes[1];
 
 export function HookScene() {
   const { stage, done, replay, skip } = useStages(hookDelays);

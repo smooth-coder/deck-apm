@@ -11,7 +11,7 @@ import {
 import { PipelineVisualizer } from "../components/PipelineVisualizer";
 import { scenes } from "../data/presentation";
 
-const scene = scenes[5];
+const scene = scenes[6];
 
 export function SoftwareDeliveryScene() {
   const [view, setView] = useState<"pipeline" | "adoption">("pipeline");

@@ -1,6 +1,6 @@
-# El agente también es una dependencia — APM
+# El contexto del agente también es una dependencia — APM
 
-**Entrega de software con IA: versionar, bloquear y validar la configuración del agente.** Charla de 20 minutos implementada como una aplicación React (Vite + TypeScript + Tailwind v4): **14 minutos de contenido + 6 minutos para preguntas**. Tesis: la configuración del agente es parte de tu entrega; versiónala, bloquéala y valídala en CI. Guion y tiempos: [`docs/talk-script.md`](docs/talk-script.md).
+**Entrega de software con IA: los agentes, skills y reglas del equipo, versionados como cualquier dependencia.** Charla de 20 minutos implementada como una aplicación React (Vite + TypeScript + Tailwind v4): **14 minutos de contenido + 6 minutos para preguntas**. Tesis: el contexto del agente es parte de tu entrega; versiónalo e instálalo como una dependencia más, y que CI lo verifique. Guion y tiempos: [`docs/talk-script.md`](docs/talk-script.md).
 
 La narrativa, los controles de las diapositivas y las notas del presentador están en español. La demo, los ejemplos de código, los nombres de archivos y la salida real de la CLI permanecen en inglés. La página declara `lang="es"`; la demo y los ejemplos en inglés identifican su idioma.
 
@@ -21,21 +21,24 @@ pnpm preview
 | --- | --- |
 | Derecha / Abajo / Espacio / PageDown | Diapositiva siguiente |
 | Izquierda / Arriba / PageUp | Diapositiva anterior |
-| 1–6 | Saltar a una diapositiva |
-| P | Abrir la demo de consumo de la diapositiva 5 |
+| 1–7 | Saltar a una diapositiva |
+| 5 / 6 | Demo de creación (5) y demo de consumo (6) |
+| P | Abrir la demo de consumo de la diapositiva 6 |
 | F | Alternar pantalla completa, si el navegador lo permite |
 
 La diapositiva actual se guarda en la URL (`#/scene/3`), por lo que se puede recargar o compartir un enlace directo. Espacio e Intro activan el botón enfocado; haz clic en el fondo para avanzar con Espacio.
 
-La diapositiva 1 plantea el problema: **entregamos con agentes, pero su configuración no pasa por el pipeline.** Una persona nueva clona, instala y ejecuta, pero su agente no tiene las reglas, procedimientos ni conexiones del equipo. APM se presenta en la diapositiva 3. No se promete que instalar configuración haga correcto el código del agente.
+La diapositiva 1 es la portada (título y subtítulo, sin tiempo propio: se presenta dentro de los 2 minutos de la 2).
 
-La diapositiva 2 compara dos configuraciones ilustrativas con el mismo pipeline: lo que se entrega depende de la laptop de origen. No son resultados medidos de modelos. La 3 trata la configuración del agente como dependencia (declarada en `apm.yml`, versionada por el equipo y bloqueada en `apm.lock.yaml`); la analogía con npm es secundaria. **Ejemplo técnico y límites** permite inspeccionar el manifiesto.
+La diapositiva 2 plantea el problema: **entregamos con agentes, pero su configuración no pasa por el pipeline.** Una persona nueva clona, instala y ejecuta, pero su agente no tiene las reglas, procedimientos ni conexiones del equipo. APM se presenta en la diapositiva 4. No se promete que instalar configuración haga correcto el código del agente.
 
-La diapositiva 4 muestra cómo se centraliza la configuración en `payments-team/`: **Initialize package → Add team files → Version package**. Empieza con una carpeta vacía, reproduce Git y `apm init` reales, añade las definiciones propias del equipo y graba un commit y la etiqueta `v1.0.0`. APM no genera el contenido del agente ni de la habilidad. **Reset repository** vuelve al estado vacío.
+La diapositiva 3 compara dos configuraciones ilustrativas con el mismo pipeline: lo que se entrega depende de la laptop de origen. No son resultados medidos de modelos. La 4 trata la configuración del agente como dependencia (declarada en `apm.yml`, versionada por el equipo y bloqueada en `apm.lock.yaml`); la analogía con npm es secundaria. **Ejemplo técnico y límites** permite inspeccionar el manifiesto.
 
-La diapositiva 5 muestra únicamente el uso desde `payments-service/`. Empieza solo con su `apm.yml`; al finalizar **Install** aparecen los archivos desplegados y el archivo de bloqueo. Recorrido principal: **Install → Inspect Lockfile → Run CI checks** (diez comprobaciones aprobadas) **→ Add dependency without installing → Run CI checks** (falla con la salida real de `apm audit --ci` y `apm install --frozen`, código 1) **→ Fix manifest & re-run CI** (vuelve a pasar). El análisis Unicode queda como respaldo opcional. **Reset Demo** vuelve al manifiesto único, incluso durante la reproducción. En ambas pantallas, el explorador permanece a la izquierda, también en móvil; solo las acciones completadas muestran un resultado breve.
+La diapositiva 5 muestra cómo se centraliza la configuración en `payments-team/`: **Initialize package → Add team files → Version package**. Empieza con una carpeta vacía, reproduce Git y `apm init` reales, añade las definiciones propias del equipo y graba un commit y la etiqueta `v1.0.0`. APM no genera el contenido del agente ni de la habilidad. **Reset repository** vuelve al estado vacío.
 
-La diapositiva 6 cierra con el pipeline de entrega: **Configuración** (APM: instala la configuración revisada y `apm audit --ci` compara manifiesto y lockfile), **Validación** (equipo: pruebas del producto y evaluaciones del agente) y **Revisión y publicación** (equipo: revisión humana, compilación y controles de publicación). **Cómo empezar** explica cómo declarar el repositorio real del equipo y añadir `apm audit --ci` como comprobación obligatoria en CI. La frase final: «El próximo dev clona el repo y su agente ya trabaja como el equipo.» El total es de 14+6 minutos.
+La diapositiva 6 muestra únicamente el uso desde `payments-service/`. Empieza solo con su `apm.yml`; al finalizar **Install** aparecen los archivos desplegados y el archivo de bloqueo. Recorrido principal: **Install → Inspect Lockfile → Run CI checks** (diez comprobaciones aprobadas) **→ Add dependency without installing → Run CI checks** (falla con la salida real de `apm audit --ci` y `apm install --frozen`, código 1) **→ Fix manifest & re-run CI** (vuelve a pasar). El análisis Unicode queda como respaldo opcional. **Reset Demo** vuelve al manifiesto único, incluso durante la reproducción. En ambas pantallas, el explorador permanece a la izquierda, también en móvil; solo las acciones completadas muestran un resultado breve.
+
+La diapositiva 7 cierra con el pipeline de entrega: **Configuración** (APM: instala la configuración revisada y `apm audit --ci` compara manifiesto y lockfile), **Validación** (equipo: pruebas del producto y evaluaciones del agente) y **Revisión y publicación** (equipo: revisión humana, compilación y controles de publicación). **Cómo empezar** explica cómo declarar el repositorio real del equipo y añadir `apm audit --ci` como comprobación obligatoria en CI. La frase final: «El próximo dev clona el repo y su agente ya trabaja como el equipo.» El total es de 14+6 minutos.
 
 ## Versión de APM y evidencia
 
@@ -54,4 +57,4 @@ No hace falta `vercel.json`: la navegación usa el fragmento de la URL, no rutas
 
 ## QR pendiente
 
-`public/qr-code.svg` es provisional y no se muestra. Cuando exista la URL del despliegue, genera un QR real y sustituye el archivo antes de volver a mostrarlo en la diapositiva 6.
+`public/qr-code.svg` es provisional y no se muestra. Cuando exista la URL del despliegue, genera un QR real y sustituye el archivo antes de volver a mostrarlo en la diapositiva 7.
