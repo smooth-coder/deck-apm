@@ -1,101 +1,102 @@
 #!/usr/bin/env bash
-# Re-records the APM session behind src/playground/recorded.ts (see scripts/README.md).
-#
-# Everything happens in a throwaway directory created with mktemp -d. Nothing is written into
-# the project. Afterwards run `python3 -I scripts/gen_recorded.py <out-dir>` (the path is printed
-# at the end), which is the only step that writes src/playground/recorded.ts.
-#
-# Usage:
-#   scripts/record.sh            run the full recording (needs uv and network access)
-#   scripts/record.sh --help     show this help and exit
-#   scripts/record.sh --dry-run  print the plan and exit without touching anything
-#
-# Environment:
-#   APM_VERSION   apm-cli version to install (default below)
-#   KEEP_WORKDIR  set to 0 to delete the temp directory on exit (default 1: keep it so that
-#                 gen_recorded.py can read the outputs)
+# Record a real Git-backed organization package without publishing an illustrative GitHub repo.
+# Usage: scripts/record.sh [--help|--dry-run]
 set -euo pipefail
-
 APM_VERSION="${APM_VERSION:-0.33.0}"
-KEEP_WORKDIR="${KEEP_WORKDIR:-1}"
-
-usage() { sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; }
-
-DRY_RUN=0
 case "${1:-}" in
-  -h | --help) usage; exit 0 ;;
-  --dry-run) DRY_RUN=1 ;;
+  --help|-h) printf '%s\n' 'Record an isolated Git-backed organization package with apm-cli. Requires uv and git.' 'Generates src/playground/recorded.ts, then removes the scratch environment.'; exit 0 ;;
+  --dry-run) printf '%s\n' "Would install apm-cli==$APM_VERSION in scratch, record Git/APM init, copy authored team definitions, commit/tag a local Git repo, map the illustrative GitHub URL using isolated Git insteadOf, record install/MCP/CI, generate recorded.ts, and remove scratch. No remote publication."; exit 0 ;;
   "") ;;
-  *) echo "unknown argument: $1" >&2; usage >&2; exit 2 ;;
+  *) printf 'Unknown argument: %s\n' "$1" >&2; exit 2 ;;
 esac
-
-if [ "$DRY_RUN" = 1 ]; then
-  echo "Would create a temp dir with mktemp -d, run: uv venv + uv pip install apm-cli==${APM_VERSION},"
-  echo "then record: init, install, audit, audit --file, audit --ci (clean, drifted), install --frozen,"
-  echo "audit --ci (fixed), deps list. Outputs go to <tmp>/out. Nothing is written to the project."
-  exit 0
-fi
-
-command -v uv >/dev/null 2>&1 || { echo "uv is required (brew install uv)" >&2; exit 1; }
-
-R="$(mktemp -d "${TMPDIR:-/tmp}/apmrec.XXXXXX")"
-[ "$KEEP_WORKDIR" = 0 ] && trap 'rm -rf "$R"' EXIT
-
-# Venv created on demand, inside the temp dir.
-uv venv "$R/venv" >/dev/null
-uv pip install --python "$R/venv/bin/python" "apm-cli==${APM_VERSION}" >/dev/null
+command -v uv >/dev/null 2>&1 || { printf '%s\n' 'uv is required' >&2; exit 1; }
+command -v git >/dev/null 2>&1 || { printf '%s\n' 'git is required' >&2; exit 1; }
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+R="$(mktemp -d "${TMPDIR:-/tmp}/apm-organization.XXXXXX")"
+trap 'rm -rf "$R"' EXIT
+uv venv "$R/venv"
+uv pip install --python "$R/venv/bin/python" "apm-cli==$APM_VERSION"
 export PATH="$R/venv/bin:$PATH" COLUMNS=120 NO_COLOR=1
-
-mkdir -p "$R/proj" "$R/out"
-cd "$R/proj"
+mkdir -p "$R/home" "$R/out" "$R/organization/payments-team" "$R/payments-service"
+export HOME="$R/home" GIT_CONFIG_GLOBAL="$R/gitconfig" GIT_CONFIG_NOSYSTEM=1 APM_CACHE_DIR="$R/cache"
+unset GITHUB_TOKEN GH_TOKEN GITHUB_APM_PAT GITHUB_COPILOT_PAT GITHUB_PERSONAL_ACCESS_TOKEN COPILOT_GITHUB_TOKEN
+export GIT_AUTHOR_DATE=2026-10-15T00:00:00Z GIT_COMMITTER_DATE=2026-10-15T00:00:00Z
+git config --file "$GIT_CONFIG_GLOBAL" user.name 'Northstar demo'
+git config --file "$GIT_CONFIG_GLOBAL" user.email 'demo@example.invalid'
 O="$R/out"
-
-apm --version > "$O/00-version.out" 2>&1
-apm init --yes > "$O/01-init.out" 2>&1 && echo "init 0" >> "$O/exit.txt" || echo "init $?" >> "$O/exit.txt"
-cp apm.yml "$O/01-apm.init.yml"
-
-# HAND EDIT 1: uncomment the targets block (apm init writes it commented out).
-python3 -I -c "
-p='apm.yml';s=open(p).read()
-s=s.replace('# targets:','targets:').replace('#   - ','  - ').replace('(uncomment to pin)','(uncommented to pin)')
-open(p,'w').write(s)"
-cp apm.yml "$O/02-apm.before-install.yml"
-
-# The remaining commands are expected to fail sometimes (exit codes are the recording), so no -e.
-set +e
-rec() { # rec <label> <outfile> <cmd...>
-  local label="$1" out="$2"; shift 2
-  "$@" > "$O/$out" 2>&1
-  echo "$label $?" >> "$O/exit.txt"
+rec() {
+  local label="$1" outfile="$2"; shift 2
+  local code=0
+  "$@" > "$O/$outfile" 2>&1 || code=$?
+  printf '%s %s\n' "$label" "$code" >> "$O/exit.txt"
 }
-
-rec install 03-install.out apm install microsoft/apm-sample-package#v1.0.0
+# Record commands in their real working directory; the UI reuses these exact strings.
+PRODUCER_INIT_COMMAND='git init --initial-branch=main && apm init --yes'
+PRODUCER_VERSION_COMMAND="git add . && git commit -m 'Share PAY-142 refund configuration' && git tag v1.0.0 && git rev-parse 'v1.0.0^{commit}'"
+printf '%s\n' "$PRODUCER_INIT_COMMAND" > "$O/00-producer-init.command"
+printf '%s\n' "$PRODUCER_VERSION_COMMAND" > "$O/00-producer-version.command"
+cd "$R/organization/payments-team"
+rec producer-init 00-producer-init.out bash -c "$PRODUCER_INIT_COMMAND"
+if [ ! -f apm.yml ]; then cat "$O/00-producer-init.out"; exit 1; fi
+cp apm.yml "$O/00-producer-init.yml"
+# These definitions are authored by the team, not generated by apm init.
+cp -R "$PROJECT_ROOT/examples/payments-team/." .
+rec producer-version 00-producer-version.out bash -c "$PRODUCER_VERSION_COMMAND"
+git config --file "$GIT_CONFIG_GLOBAL" "url.file://$R/organization/payments-team.insteadOf" https://github.com/northstar-engineering/payments-team.git
+cp "$PROJECT_ROOT/examples/payments-service/apm.yml" "$R/payments-service/apm.yml"
+cd "$R/payments-service"
+apm --version > "$O/00-version.out" 2>&1
+git -C "$R/organization/payments-team" rev-parse 'v1.0.0^{commit}' > "$O/00-git-commit.out"
+cp "$GIT_CONFIG_GLOBAL" "$O/00-gitconfig"
+python -I -c '
+from pathlib import Path
+import json
+root = Path("../organization/payments-team")
+files = {"payments-team/" + str(p.relative_to(root)): p.read_text() for p in sorted(root.rglob("*")) if p.is_file() and ".git" not in p.parts}
+Path("'"$O"'/00-team-source.json").write_text(json.dumps(files, indent=2))
+'
+cp apm.yml "$O/02-apm.before-install.yml"
+rec install 03-install.out apm install
+if [ ! -f apm.lock.yaml ]; then cat "$O/03-install.out"; exit 1; fi
 cp apm.yml "$O/04-apm.after-install.yml"
 cp apm.lock.yaml "$O/05-lock.yaml"
+python -I -c '
+from pathlib import Path
+import json, yaml
+lock = yaml.safe_load(Path("apm.lock.yaml").read_text())
+files = {}
+for dep in lock.get("dependencies", []):
+    for path in dep.get("deployed_files", []):
+        p = Path(path)
+        if p.is_file():
+            files[path] = p.read_text()
+for path in (".mcp.json", ".github/mcp.json", ".vscode/mcp.json"):
+    p = Path(path)
+    if p.is_file():
+        files[path] = p.read_text()
+Path("'"$O"'/16-deployed.json").write_text(json.dumps(files, indent=2))
+'
+rec deps-list 14-deps-list.out apm deps list
 rec audit 06-audit.out apm audit
-
-# Fixture: text "pasted from a web page" with U+200B and U+202E.
 mkdir -p src
-printf '# Review notes\nAlways run the style checker\xe2\x80\x8b before you open a pull request.\nNever skip the design review.\xe2\x80\xae\n' > src/pasted-prompt.md
+printf '# Review notes\nAlways run the refund check\xe2\x80\x8b before opening a pull request.\nReview the retry evidence.\xe2\x80\xae\n' > src/pasted-prompt.md
 cp src/pasted-prompt.md "$O/07-fixture.md"
 rec audit-file 07-audit-file.out apm audit --file src/pasted-prompt.md
 rec ci-clean 08-ci-clean.out apm audit --ci
-
-# HAND EDIT 2: declare a dependency without installing it. example/engineering-skills is a
-# PLACEHOLDER (github.com/example/engineering-skills 404s); only the manifest shape is real.
-python3 -I -c "
-p='apm.yml';s=open(p).read();k='    - microsoft/apm-sample-package#v1.0.0\n';assert k in s
-open(p,'w').write(s.replace(k,k+'    - example/engineering-skills\n'))"
+python -I -c '
+from pathlib import Path
+p = Path("apm.yml")
+s = p.read_text()
+line = "    - northstar-engineering/payments-team#v1.0.0\n"
+assert line in s, "Git dependency declaration changed unexpectedly"
+p.write_text(s.replace(line, line + "    - northstar-engineering/uninstalled-team#v1.0.0\n"))
+'
 cp apm.yml "$O/09-apm.drifted.yml"
 rec ci-fail 10-ci-fail.out apm audit --ci
 rec frozen 11-frozen.out apm install --frozen
-
-python3 -I -c "
-p='apm.yml';s=open(p).read();open(p,'w').write(s.replace('    - example/engineering-skills\n',''))"
+cp "$O/04-apm.after-install.yml" apm.yml
 cp apm.yml "$O/12-apm.fixed.yml"
 rec ci-pass 13-ci-pass.out apm audit --ci
 cp .gitignore "$O/15-gitignore"
-rec deps-list 14-deps-list.out apm deps list
-
-echo "Recorded into: $O"
-echo "Next: python3 -I scripts/gen_recorded.py \"$O\"   (rewrites src/playground/recorded.ts)"
+python -I "$PROJECT_ROOT/scripts/gen_recorded.py" "$O"
+printf '%s\n' 'Recorded real producer init/version, Git install, MCP configuration, lockfile and CI recovery. Scratch removed on exit.'

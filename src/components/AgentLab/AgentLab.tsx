@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTerminalPlayback } from "../../hooks/useTerminalPlayback";
 import {
   commandRun,
@@ -10,13 +10,13 @@ import {
 import { canRun, type DemoActionType, INITIAL_STATE, transition } from "../../playground/demoEngine";
 import {
   type ButtonId,
-  COMPLETE_MESSAGE,
+  demoResults,
   focusFileAfter,
-  INTRO_STEP,
   nextStep,
 } from "../../playground/scenarios";
 import {
   buildFileSystem,
+  DEFAULT_FILE_PATH,
   findFile,
   MANIFEST_PATH,
 } from "../../playground/virtualFileSystem";
@@ -27,15 +27,16 @@ import { LabTerminal } from "./LabTerminal";
 
 const NO_ENTRIES: readonly TermEntry[] = [];
 
-const LAB_FLOW = "FRESH CHECKOUT → INSTALL → LOCK → AUDIT → CI GATE";
 
 /** From docs/apm-research.md, section 6. */
 const LIMITS: readonly { label: string; text: string }[] = [
-  { label: "APM does:", text: "install, lock, hash, hidden-Unicode scan, drift check, CI gate." },
+  { label: "Recording:", text: "Tagged local Git repo behind an isolated URL alias, not a GitHub publication. No model or payment-provider execution." },
+  { label: "MCP:", text: "APM trusts MCP from this direct dependency. Indirect self-defined MCP requires --trust-transitive-mcp. Client approval and private-service credentials remain personal; no server was invoked." },
+  { label: "APM does:", text: "install, lock, hash, configure MCP, scan hidden Unicode, check drift and gate CI." },
   { label: "APM does not:", text: "detect prompt injection, review semantics, sandbox the agent at runtime." },
   {
     label: "Not shown:",
-    text: "org policy (apm-policy.yml) and MCP trust prompts. Pre-1.0: flags and output change between versions.",
+    text: "org policy (apm-policy.yml), runtime MCP approval and private-service authorization. Pre-1.0: flags and output can change.",
   },
 ];
 
@@ -46,6 +47,8 @@ function actionFor(id: ButtonId, ciFailed: boolean): DemoActionType {
       return "install";
     case "inspect":
       return "inspectLockfile";
+    case "edit":
+      return "addDependency";
     case "security":
       return "runSecurity";
     case "ci":
@@ -58,18 +61,26 @@ function actionFor(id: ButtonId, ciFailed: boolean): DemoActionType {
 export function AgentLab() {
   const [state, setState] = useState(INITIAL_STATE);
   const [entries, setEntries] = useState<readonly TermEntry[]>(NO_ENTRIES);
-  const [selected, setSelected] = useState(MANIFEST_PATH);
-  const [open, setOpen] = useState<readonly string[]>([MANIFEST_PATH]);
+  const [selected, setSelected] = useState(DEFAULT_FILE_PATH);
+  const [open, setOpen] = useState<readonly string[]>([DEFAULT_FILE_PATH]);
   const [hint, setHint] = useState<string | null>(null);
+  const [view, setView] = useState<"files" | "output">("files");
   const { frame, playing, skip } = useTerminalPlayback(entries);
 
-  const nodes = useMemo(() => buildFileSystem(state), [state]);
+  // File inspection is the evidence for this step; never wait for invisible terminal typing.
+  useEffect(() => {
+    if (view === "files" && playing) skip();
+  }, [view, playing, skip]);
+
+  const fileSystemState = state === "dependencies-installed" && playing ? INITIAL_STATE : state;
+  const nodes = useMemo(() => buildFileSystem(fileSystemState), [fileSystemState]);
   const file = findFile(nodes, selected) ?? findFile(nodes, MANIFEST_PATH);
   const tabs = open.filter((path) => findFile(nodes, path));
 
   const select = useCallback((path: string) => {
     setSelected(path);
     setOpen((prev) => (prev.includes(path) ? prev : [...prev, path]));
+    setView("files");
   }, []);
 
   const press = (id: ButtonId) => {
@@ -84,26 +95,27 @@ export function AgentLab() {
     if (type === "reset") {
       setState(INITIAL_STATE);
       setEntries(NO_ENTRIES);
-      setSelected(MANIFEST_PATH);
-      setOpen([MANIFEST_PATH]);
+      setSelected(DEFAULT_FILE_PATH);
+      setOpen([DEFAULT_FILE_PATH]);
+      setView("files");
       return;
     }
     const run = commandRun(type, state);
     const focus = focusFileAfter(type, state);
-    setEntries((prev) => [...prev, ...(run?.entries ?? [])]);
+    setEntries(run ? [...run.entries] : NO_ENTRIES);
     setState(result.state);
     select(focus);
+    setView(type === "inspectLockfile" || type === "addDependency" ? "files" : "output");
   };
 
   const step = nextStep(state);
   const buttons: readonly ActionButton[] = [
     { id: "install", label: "Install", title: "Run apm install" },
     { id: "inspect", label: "Inspect Lockfile", title: "Read apm.lock.yaml" },
-    { id: "security", label: "Security", title: `${SECURITY_LABEL}. ${SECURITY_NOTE}` },
     {
       id: "ci",
-      label: state === "ci-failed" ? "Fix manifest & re-run CI" : "CI Validation",
-      title: "Run apm audit --ci",
+      label: state === "ci-failed" ? "Fix manifest & re-run CI" : "Run CI checks",
+      title: state === "ci-failed" ? "Remove the added dependency and run apm audit --ci" : state === "manifest-edited" ? "Run apm audit --ci and apm install --frozen" : "Run apm audit --ci",
     },
     { id: "reset", label: "Reset Demo", title: "Restore the initial state" },
   ].map((b) => {
@@ -123,30 +135,34 @@ export function AgentLab() {
   return (
     <div className="lab">
       <header className="lab__header" data-state={state}>
-        <h2 className="lab__title">{LAB_FLOW}</h2>
         <p className="badge lab__badge">{RECORDED_BADGE}</p>
       </header>
-
-      <div className="lab__main">
-        <FileExplorer nodes={nodes} selectedPath={file?.path ?? MANIFEST_PATH} onSelect={select} />
-        <CodeViewer tabs={tabs} file={file} onSelect={select} />
+      <div className="lab__views" role="group" aria-label="Demo focus">
+        <button type="button" className="btn" aria-pressed={view === "files"} onClick={() => setView("files")}>
+          File view
+        </button>
+        <button type="button" className="btn" aria-pressed={view === "output"} onClick={() => setView("output")}>
+          Recorded output
+        </button>
       </div>
 
-      <LabTerminal entries={entries} frame={frame} playing={playing} onSkip={skip} />
+      <div className="lab__evidence">
+        <FileExplorer nodes={nodes} selectedPath={file?.path ?? MANIFEST_PATH} onSelect={select} />
+        <div className="lab__panes">
+          <div className="lab__main" hidden={view !== "files"}>
+            <CodeViewer tabs={tabs} file={file} onSelect={select} />
+          </div>
+          <div className="lab__output" hidden={view !== "output"}>
+            <LabTerminal entries={entries} frame={frame} playing={playing} onSkip={skip} />
+          </div>
+        </div>
+      </div>
 
-      <p className="lab__path" aria-live="polite">
-        <span className="lab__path-label">Demo path</span>
-        {step ? (
-          <>
-            <span>
-              {state === "initial" ? `${INTRO_STEP.say} ` : ""}
-              Next: <strong>{step.title}</strong>. {step.say}
-            </span>
-          </>
-        ) : (
-          <span>{COMPLETE_MESSAGE}</span>
-        )}
-      </p>
+      {state !== "initial" && !playing ? (
+        <p className="lab__result" data-state={state} aria-live="polite">
+          {demoResults[state]}
+        </p>
+      ) : null}
       {hint ? (
         <p className="lab__hint" role="status">
           {hint}
@@ -154,13 +170,37 @@ export function AgentLab() {
       ) : null}
 
       <ActionBar buttons={buttons} onPress={press} />
-      <ul className="lab__limits" aria-label="What APM does and does not do">
-        {LIMITS.map((l) => (
-          <li key={l.label}>
-            <strong>{l.label}</strong> {l.text}
-          </li>
-        ))}
-      </ul>
+      <details className="lab__backup">
+        <summary>Optional: show an incomplete dependency change</summary>
+        <button
+          type="button"
+          className="btn"
+          disabled={playing || !canRun(state, "addDependency")}
+          title="After successful CI, add an example dependency to apm.yml without installing it or updating the lockfile"
+          onClick={() => press("edit")}
+        >
+          Add dependency without installing
+        </button>
+      </details>
+      <details className="lab__backup">
+        <summary>Backup: Unicode scan and scope limits</summary>
+        <button
+          type="button"
+          className="btn"
+          disabled={playing || !canRun(state, "runSecurity")}
+          title={`${SECURITY_LABEL}. ${SECURITY_NOTE}`}
+          onClick={() => press("security")}
+        >
+          Scan hidden Unicode
+        </button>
+        <ul className="lab__limits" aria-label="What APM does and does not do">
+          {LIMITS.map((l) => (
+            <li key={l.label}>
+              <strong>{l.label}</strong> {l.text}
+            </li>
+          ))}
+        </ul>
+      </details>
     </div>
   );
 }

@@ -4,8 +4,8 @@ export type NavAction =
   | { type: "goto"; index: number }
   | { type: "fullscreen" };
 
-/** Zero-based index of the playground scene (scene 5). */
-export const PLAYGROUND_INDEX = 4;
+/** Zero-based index of the consumer demo (scene 6). */
+export const PLAYGROUND_INDEX = 5;
 
 export function clampIndex(index: number, count: number): number {
   return Math.min(Math.max(index, 0), Math.max(count - 1, 0));

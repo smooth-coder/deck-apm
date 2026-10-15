@@ -8,13 +8,15 @@ beforeEach(() => {
 describe("App", () => {
   it("renders the first scene by default", () => {
     render(<App />);
-    expect(screen.getByRole("heading", { level: 1, name: "Your code is reproducible. Your agents aren't." })).toBeInTheDocument();
+    const navigation = screen.getByRole("navigation");
+    expect(navigation.querySelector('[aria-current="step"]')).toBe(navigation.querySelectorAll("button")[0]);
   });
 
   it("deep-links to a scene from the hash", () => {
     window.location.hash = "#/scene/5";
     render(<App />);
-    expect(screen.getByRole("heading", { level: 1, name: "One command rebuilds the agent's environment." })).toBeInTheDocument();
+    const navigation = screen.getByRole("navigation");
+    expect(navigation.querySelector('[aria-current="step"]')).toBe(navigation.querySelectorAll("button")[4]);
   });
 
   it("navigates with the keyboard", () => {
@@ -22,6 +24,7 @@ describe("App", () => {
     act(() => {
       fireEvent.keyDown(window, { key: "ArrowRight" });
     });
-    expect(screen.getByRole("heading", { level: 1, name: "Same repo. Same task. Four different pull requests." })).toBeInTheDocument();
+    const navigation = screen.getByRole("navigation");
+    expect(navigation.querySelector('[aria-current="step"]')).toBe(navigation.querySelectorAll("button")[1]);
   });
 });

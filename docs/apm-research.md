@@ -1,5 +1,20 @@
 # APM research (primary sources only)
 
+## Grabación vigente: repositorio central y consumidor Git
+
+La presentación usa una grabación real con `apm-cli` 0.33.0 de `examples/payments-team`, consumido desde el manifiesto mínimo de `examples/payments-service`. La referencia ilustrativa `northstar-engineering/payments-team#v1.0.0` se resuelve a un Git local real mediante una regla `insteadOf` aislada. No se publicó ni descargó ese repositorio de GitHub. La grabación anterior por ruta local y los ejemplos públicos de las secciones históricas no representan la demo vigente.
+
+- Definiciones del equipo: revisor, habilidad de reintentos y reglas bajo `.apm/`; el manifiesto central declara además el MCP documental Microsoft Learn.
+- Creación del productor: Git init y `apm init --yes`, código 0; manifiesto inicial separado de las definiciones del equipo; Git commit/tag/rev-parse, código 0. Las pantallas 5 y 6 separan autoría (2 min) y consumo (3 min), sin repetir las fuentes en el consumidor.
+- Consumidor: solo metadatos, clientes y referencia Git; instala con `apm install`, código 0.
+- Archivo de bloqueo: `resolved_commit: a8de87fb7a2791683f5ece4ec15ad5e94452c48b`, referencia `v1.0.0`, seis huellas de archivos y configuración MCP. El commit corresponde al Git local de la demostración.
+- La CLI escribió `.mcp.json` y `.github/mcp.json`; ambos se capturaron. No hubo conexión MCP ni ejecución de modelo. El MCP propio de una dependencia directa se considera confiado; `--trust-transitive-mcp` se reserva para el caso indirecto.
+- Auditoría y CI limpios: código 0. Referencia adicional sin instalar: CI y modo congelado, código 1. Restaurar manifiesto: código 0 y diez comprobaciones aprobadas.
+- Fuentes de autoría: [habilidades](https://microsoft.github.io/apm/producer/author-primitives/skills/), [agentes e instrucciones](https://microsoft.github.io/apm/producer/author-primitives/instructions-and-agents/) y [MCP y confianza](https://microsoft.github.io/apm/producer/author-primitives/mcp-as-primitive/). Los documentos vivos pueden evolucionar; esta evidencia usa la CLI fijada en 0.33.0.
+
+Evidencia vigente y límites: [`apm-validation.md`](apm-validation.md). Las secciones siguientes se conservan como investigación histórica, no como rutas, conteos o resultados actuales.
+
+
 Researched 2026-10-14. Sources (all primary):
 
 - [R] Repo + README: https://github.com/microsoft/apm (README: https://raw.githubusercontent.com/microsoft/apm/main/README.md)

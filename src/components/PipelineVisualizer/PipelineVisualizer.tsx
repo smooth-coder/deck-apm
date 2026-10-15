@@ -1,14 +1,11 @@
-import { COVERAGE_LABEL, pipelineDelays, pipelineSteps } from "../../data/delivery";
-import { useStages } from "../../hooks/useStages";
+import { COVERAGE_LABEL, pipelineSteps } from "../../data/delivery";
 
 interface Props {
-  /** Shown next to the Replay button. */
+  /** Boundary of APM's coverage, not the result of an executed pipeline. */
   caption?: string;
 }
 
 export function PipelineVisualizer({ caption }: Props) {
-  const { stage, replay } = useStages(pipelineDelays);
-
   return (
     <div className="pipeline">
       <ol className="pipeline__steps">
@@ -16,10 +13,9 @@ export function PipelineVisualizer({ caption }: Props) {
           <li
             key={step.label}
             className="pipeline__step"
-            data-state={i + 1 < stage ? "done" : i + 1 === stage ? "active" : "idle"}
           >
             <span className="pipeline__dot" aria-hidden="true">
-              {i + 1 < stage ? "✓" : i + 1}
+              {i + 1}
             </span>
             <span className="pipeline__label">{step.label}</span>
             <span className="pipeline__tag" data-coverage={step.coverage}>
@@ -29,12 +25,7 @@ export function PipelineVisualizer({ caption }: Props) {
           </li>
         ))}
       </ol>
-      <div className="controls">
-        <button type="button" className="btn" onClick={replay}>
-          Replay
-        </button>
-        {caption ? <p className="caption pipeline__caption">{caption}</p> : null}
-      </div>
+      {caption ? <p className="caption pipeline__caption">{caption}</p> : null}
     </div>
   );
 }

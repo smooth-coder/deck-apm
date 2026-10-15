@@ -1,17 +1,19 @@
 /**
  * Deterministic state machine for the playground. Pure: no timers, no DOM, no I/O.
  *
- * States are exactly the six from the plan; no extra state was needed:
+ * The main talk validates a clean install; manifest failure and Unicode scanning are optional:
  * - "lockfile-generated": `apm install` writes apm.lock.yaml; this state means the audience has inspected it.
  * - "security-warning": the hidden-character scan found a problem in a demo file.
- * - "ci-failed": apm.yml was edited without running `apm install`, so the lockfile is out of sync.
- * - "ci-passed": the unlocked manifest line was removed and `apm audit --ci` is clean.
+ * - "manifest-edited": a dependency was added without installing it; CI has not run yet.
+ * - "ci-failed": CI rejected the mismatch between apm.yml and apm.lock.yaml.
+ * - "ci-passed": the installed configuration passed `apm audit --ci`, initially or after recovery.
  */
 export type DemoState =
   | "initial"
   | "dependencies-installed"
   | "lockfile-generated"
   | "security-warning"
+  | "manifest-edited"
   | "ci-failed"
   | "ci-passed";
 
@@ -19,6 +21,7 @@ export type DemoActionType =
   | "install"
   | "inspectLockfile"
   | "runSecurity"
+  | "addDependency"
   | "runCI"
   | "fixManifest"
   | "reset";
@@ -42,6 +45,7 @@ export const DEMO_STATES: readonly DemoState[] = [
   "dependencies-installed",
   "lockfile-generated",
   "security-warning",
+  "manifest-edited",
   "ci-failed",
   "ci-passed",
 ];
@@ -50,21 +54,23 @@ export const DEMO_STATES: readonly DemoState[] = [
 const TRANSITIONS: Readonly<Record<DemoState, Partial<Record<DemoActionType, DemoState>>>> = {
   initial: { install: "dependencies-installed" },
   "dependencies-installed": { inspectLockfile: "lockfile-generated" },
-  "lockfile-generated": { runSecurity: "security-warning" },
-  "security-warning": { runCI: "ci-failed" },
+  "lockfile-generated": { runSecurity: "security-warning", runCI: "ci-passed" },
+  "security-warning": { runCI: "ci-passed" },
+  "manifest-edited": { runCI: "ci-failed" },
   // Re-running CI on a red build keeps it red; the fix is a separate action.
   "ci-failed": { runCI: "ci-failed", fixManifest: "ci-passed" },
-  // Re-running CI on a green build keeps it green.
-  "ci-passed": { runCI: "ci-passed" },
+  // After success, the presenter can optionally introduce a manifest mismatch.
+  "ci-passed": { runCI: "ci-passed", addDependency: "manifest-edited" },
 };
 
 const HINTS: Readonly<Record<DemoState, string>> = {
   initial: "Nothing is installed yet. Run Install first.",
   "dependencies-installed": "Inspect the lockfile that install just wrote.",
-  "lockfile-generated": "Next step is the hidden-character and integrity scan.",
-  "security-warning": "Next step is CI Validation.",
+  "lockfile-generated": "Run CI checks on the installed configuration.",
+  "security-warning": "Run CI checks on the installed configuration. The Unicode fixture is separate.",
+  "manifest-edited": "The manifest changed; the lockfile did not. Run CI checks to detect the mismatch.",
   "ci-failed": "CI is red. Fix the manifest and re-run CI.",
-  "ci-passed": "Demo complete. Use Reset Demo to run it again.",
+  "ci-passed": "Configuration checks passed. Reset the demo or open the optional failure example.",
 };
 
 export function transition(state: DemoState, action: DemoAction): TransitionResult {

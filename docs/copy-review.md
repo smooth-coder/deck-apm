@@ -1,5 +1,7 @@
 # Copy review: "Your AI Agents Have a Dependency Problem"
 
+Historical audit of the earlier deck. Its four-developer comparison, seven-step pipeline and timings are superseded by the delivery-focused edition in [`talk-script.md`](talk-script.md). Findings below are retained as historical review evidence, not the current implementation contract.
+
 Scope: review only. Based on a read of `src/data/*.ts`, `src/scenes/*.tsx`, `src/components/**`, `src/playground/*`, `docs/talk-script.md`, `docs/apm-research.md`. No screenshots were taken; widths are judged from the layout code (graph node 390px, etc.). Line numbers refer to files as they were when read; another agent is editing, so re-check before applying.
 
 Verification key. Tool-file facts below were checked against primary docs on 2026-10-15:

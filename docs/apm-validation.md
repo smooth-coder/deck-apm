@@ -1,44 +1,70 @@
-# APM claims: validation status
+# APM: validación vigente de la presentación
 
-Validated 2026-10-14 (playground re-recorded 2026-10-15) against apm-cli 0.33.0 (released 2026-10-02, pre-1.0). Evidence, sources and real command output live in [`apm-research.md`](./apm-research.md); the claim numbers below refer to its claims table. APM is pre-1.0, so re-check before each talk.
+La demo representa una organización con un repositorio central de agentes, habilidades, reglas y configuración MCP. El proyecto consumidor declara una referencia Git en `apm.yml`, no las definiciones de esos componentes. Esta grabación con `apm-cli` 0.33.0 sustituye la anterior instalación por ruta local; las secciones históricas de [`apm-research.md`](apm-research.md) no describen el estado actual de la demo.
 
-Legend: VERIFIED = true as written, CHANGED = copy was wrong or vague and was fixed, OPEN = still needs a human.
+## Propiedad y consumo
 
-## Scene 4 (APM Moment), `src/data/apm.ts`
+- `examples/payments-team`: repositorio central del ejemplo. Contiene `.apm/agents/refund-reviewer.agent.md`, `.apm/skills/check-refund/SKILL.md`, `.apm/instructions/refunds.instructions.md` y su propio manifiesto con `dependencies.mcp`.
+- `examples/payments-service/apm.yml`: consumidor mínimo. Declara nombre, versión, clientes y `northstar-engineering/payments-team#v1.0.0` como dependencia. No contiene instrucciones del agente, procedimientos ni detalles de conexión MCP.
+- Pantalla 5: el productor empieza vacío; tras Git y `apm init` aparece su manifiesto inicial. Add team files añade las definiciones del equipo y su manifiesto final; Version package reproduce commit y etiqueta reales. Reset repository devuelve el estado vacío.
+- Pantalla 6: el consumidor empieza únicamente con `payments-service/apm.yml` y conserva ese estado durante Install. Al finalizar muestra solo archivos desplegados, su manifiesto y lockfile. No añade el árbol fuente `payments-team/` ni un segundo manifiesto. La caché real `apm_modules/` no se expande en esta vista filtrada.
+- El recorrido principal es **Install → Inspect Lockfile → Run CI checks** y termina con la auditoría limpia: diez comprobaciones aprobadas, sin mutaciones del manifiesto. El fallo queda dentro de **Optional: show an incomplete dependency change**, cerrado inicialmente. Tras el éxito, **Add dependency without installing** abre y resalta una edición deliberada de `apm.yml`; no modifica el lockfile ni ejecuta comandos. Otro clic en **Run CI checks** reproduce el rechazo. La recuperación elimina la línea añadida y vuelve a ejecutar la auditoría.
 
-- [x] VERIFIED: the manifest is `apm.yml` (claim 1).
-- [x] CHANGED: the lockfile is `apm.lock.yaml`; the UI said "APM lockfile" (claim 2).
-- [x] VERIFIED: the install command is `apm install` (claim 4).
-- [x] CHANGED: "Agentic dependencies" now lists the real types: instructions, prompts, agents, skills, hooks, plugins, MCP servers, plus transitive packages (claim 6).
-- [x] CHANGED: the row "Agent dependency validation" now names the real gate, `apm audit --ci` (alternative `apm install --frozen`). No command is literally called "dependency validation" (claim 7). The traditional side is `npm ci`, which also fails on a lockfile mismatch.
-- [x] CHANGED: the lockfile pins the commit SHA, ref, version and a SHA-256 hash per deployed file, not only versions (claim 3).
-- [x] CHANGED: `manifestSnippet` is now a real apm.yml shape (init output plus the README dependency entry) and the "illustrative, to be validated" marker is gone (claim 12 for the fictional package).
-- [x] VERIFIED: install materializes dependencies on a fresh checkout; it needs `-t` (or `targets:` in apm.yml) when no target is detectable. Files land in `.github/`, `.claude/`, `.agents/skills/`, and packages in `apm_modules/` (claims 5, 11, 13).
-- [x] VERIFIED: the "conceptual analogies, not functional identity" disclaimer stays (claim 15).
+La organización es ilustrativa. El grabador crea un Git local real y la etiqueta `v1.0.0`; una regla `insteadOf` aislada dirige la identidad GitHub de ejemplo a ese Git. No se publicó ni descargó un repositorio de esa organización en GitHub. No se presenta una dependencia `source: local` como si fuera una instalación Git.
 
-## Scene 5 (Playground), `src/playground/`
+## Comandos reales ejercitados
 
-- [x] All terminal output and every file shown (apm.yml, the full apm.lock.yaml, .gitignore, deployed paths) comes from ONE real session recorded on 2026-10-15 (`apm-research.md`, "Re-recorded runs"), copied verbatim into `src/playground/recorded.ts`. Nothing is elided or reworded.
-- [x] The manifest, the command and the output agree: `apm.yml` has `targets: [copilot, claude]` uncommented, so `apm install microsoft/apm-sample-package#v1.0.0` runs without `-t` (`Targets: claude, copilot  (source: apm.yml)`). With targets commented out the same command exits 2. `apm install` writes the dependency into apm.yml, so the viewer shows the file changing; it never writes `targets:`.
-- [x] Sample dependency is `microsoft/apm-sample-package#v1.0.0`. The 404 name `example/engineering-skills` appears only in the recorded failing CI run and is labelled as a placeholder (claim 12).
-- [x] The security step is "hidden-character and integrity scan". APM does not detect prompt injection (claim 10, FALSE). The fixture `src/pasted-prompt.md` was created in the recording run with real U+200B and U+202E; the viewer shows it with `<U+XXXX>` markers and the audit output is the real table (`3:30` RLO critical, `2:29` ZWSP warning).
-- [x] `apm list` is never used; it lists scripts, not dependencies (claim 14). `apm compile` is not shown as a check (claim 20).
-- [x] `apm deps list` is now recorded and shown in the Inspect Lockfile step.
-- [ ] OPEN: the output of the fix path `apm install` after editing apm.yml was not recorded; the demo fixes by removing the line instead (CI passes with exit 0 on the restored apm.yml, byte-identical to the post-install one).
-- [ ] OPEN: org policy (`apm-policy.yml`, `--policy org`) was not exercised and is not shown.
+| Operación | Resultado observado |
+| --- | --- |
+| Productor: Git init + `apm init --yes` | Código 0; manifiesto inicial capturado, sin definiciones del equipo |
+| Productor: añadir originales del ejemplo | Autoría del equipo, no salida generada por APM |
+| Productor: Git commit + tag `v1.0.0` + rev-parse | Código 0; cuatro archivos y el mismo commit que registra el consumidor |
+| `apm install`, con la referencia Git ya declarada | Código 0; una dependencia instalada para Claude y Copilot |
+| Agente | Un revisor original desplegado en `.claude/agents/` y `.github/agents/` |
+| Reglas | Copias en `.claude/rules/` y `.github/instructions/`; conversión real de metadatos para Claude |
+| Habilidad | `check-refund` instalado en `.agents/skills/` y `.claude/skills/` |
+| MCP | Configuración escrita en `.mcp.json` y `.github/mcp.json` |
+| Archivo de bloqueo | Referencia Git, commit resuelto, seis huellas de archivos, configuración MCP y sus destinos |
+| `apm deps list`, `apm audit`, CI limpio | Código 0 |
+| Añadir `northstar-engineering/uninstalled-team#v1.0.0` sin instalar | `apm audit --ci` y `apm install --frozen`: código 1 |
+| Restaurar el manifiesto consumidor | CI: código 0, diez comprobaciones aprobadas |
+| Archivo deliberado con caracteres ocultos | Dos hallazgos; auditoría del archivo: código 1 |
 
-## Scene 6 (Software Delivery), `src/data/delivery.ts`
+El commit capturado en `resolved_commit` es `a8de87fb7a2791683f5ece4ec15ad5e94452c48b`. Corresponde al Git local de la demostración, no a una publicación remota. El archivo de bloqueo también contiene `mcp_configs`, `mcp_target_servers` y `mcp_config_provenance`; los JSON de los clientes no forman parte de las seis huellas de archivos desplegados.
 
-- [x] VERIFIED: "APM covers part of the problem". Evals, tests and human oversight are outside APM (claim 16).
-- [x] VERIFIED: "Dependency Resolution" is `apm install` / `apm lock` (claim 17).
-- [x] CHANGED: "Security Validation" is now "Integrity Scan" tagged PARTIAL; APM only covers hidden Unicode, hash integrity, drift and policy (claim 18).
+`scripts/record.sh` prepara la sesión aislada, inicializa el productor, incorpora las definiciones, versiona e instala ese mismo paquete en el consumidor. `scripts/gen_recorded.py` exige éxitos de inicialización y versionado, los códigos del recorrido consumidor y la igualdad del commit antes de generar `src/playground/recorded.ts`. Se capturan el manifiesto inicial, originales finales, salidas Git/APM y bytes instalados, incluidos los JSON MCP. El grabador elimina su directorio temporal al terminar.
 
-## Scene 3 and 2
+## MCP: configuración, confianza y ejecución son cosas distintas
 
-- [x] VERIFIED 2026-10-15 against primary docs: CLAUDE.md is loaded every session as context, not enforced configuration; Claude Code reads AGENTS.md when there is no CLAUDE.md; skills live in `.claude/skills/<name>/SKILL.md` and load by `description`; subagents are Markdown files in `.claude/agents/` with a `tools` allow-list and their own context; project MCP config is `.mcp.json` (Claude Code asks for approval); Copilot reads `.github/copilot-instructions.md` and AGENTS.md; Cursor rules are `.cursor/rules/*.mdc`, Cursor reads AGENTS.md, MCP is `.cursor/mcp.json`; Codex reads AGENTS.md (also `~/.codex`), 32 KiB cap by default.
-- [x] DROPPED: the claim that Cursor has "no shell" (unverified). Skills and subagent locations for Copilot, Cursor and Codex are not claimed anywhere.
-- [x] Scene 2 setups and outputs are invented and labelled illustrative on screen.
+El manifiesto central declara `microsoft-learn`, con `registry: false`, `transport: http` y `https://learn.microsoft.com/api/mcp`. Es un servidor documental público sin autenticación. Esta sesión solo materializó la configuración: no se conectó al servidor, no invocó herramientas y no ejecutó un modelo.
 
-## General
+APM confía en un MCP propio de una dependencia **directa**. El comando de esta demo es `apm install`, sin `--trust-transitive-mcp`. Ese indicador amplía la confianza al MCP propio de dependencias **indirectas**; no es un requisito de este caso. Instalar la configuración no demuestra aprobación del cliente ni proporciona autorización o credenciales para servidores privados.
 
-- [ ] OPEN: replace `public/qr-code.svg` with a real QR once the deployed URL is known (the slide no longer shows it).
+Fuentes primarias:
+- [APM: MCP compartido y límite entre dependencia directa e indirecta](https://microsoft.github.io/apm/producer/author-primitives/mcp-as-primitive/#direct-vs-transitive-the-trust-boundary).
+- [Microsoft Learn MCP: configuración y autenticación](https://learn.microsoft.com/en-us/training/support/mcp).
+
+Los documentos vivos pueden evolucionar; los archivos y resultados de la demo proceden de la CLI fijada en 0.33.0.
+
+## Presentación y límites
+
+- Narrativa y controles externos a los ejemplos en español; demo, código, rutas y salida CLI en inglés. Idioma raíz `es`, con idioma `en` identificado en la demo y ejemplos correspondientes.
+- Explorador a la izquierda y archivo o terminal a la derecha, también a 390 px de ancho. Seleccionar un archivo abre su vista automáticamente.
+- Sin instrucciones iniciales de relleno ni panel explicativo. Solo una acción completada muestra un resultado breve; el detalle se explica desde [`talk-script.md`](talk-script.md).
+- Gestionar el repositorio significa revisar definiciones, versionar y actualizar consumidores de forma intencional. No se ejercitaron publicación remota ni autenticación privada.
+- Disponer de una configuración no demuestra que el modelo la siga o invoque una habilidad o agente. El texto del revisor no impone permisos de solo lectura.
+- Las huellas verifican integridad frente a una referencia, no seguridad o corrección. El análisis Unicode no detecta la semántica de una inyección de instrucciones.
+- Se conserva la advertencia real de políticas de organización omitidas: el consumidor no tiene remoto. No se validaron políticas remotas ni aislamiento de ejecución.
+- La comprobación de reembolsos de la diapositiva 7 es independiente: ejemplo local en memoria, no evaluación de agentes, endpoint HTTP ni integración con pagos.
+
+## Verificación integrada
+
+En navegador se recorrió la pantalla productora: vacío → init sin archivos anticipados → manifiesto generado → cuatro archivos authored → versión Git local. La pantalla consumidora, accesible con P, comenzó solo con su manifiesto; tras Install aparecieron exclusivamente los archivos desplegados. Se verificaron el mismo commit, fallo de CI, recuperación con diez comprobaciones y reinicio limpio. No se mezclaron fuentes del productor en la vista de consumo.
+
+En escritorio (1280×720) y móvil (390×844) se ejercitó primero el recorrido limpio: Install → Inspect Lockfile → Run CI checks, con diez comprobaciones aprobadas y sin abrir la sección de fallo ni añadir su dependencia. Después se abrió el ejemplo opcional: edición visible → rechazo → recuperación. En escritorio se comprobó que la edición conservaba exactamente el contenido anterior del lockfile. Reset dejó solo el manifiesto original; también se comprobó durante Install. La rama Unicode pudo volver a CI limpio. No hubo errores de navegador ni desbordamiento horizontal de la página; el explorador sigue a la izquierda.
+
+Se revisó la narrativa española a 1280×720 y su adaptación a 390×844, sin desbordamiento horizontal de la página. En móvil, explorador y visor conservaron la misma coordenada vertical y columnas separadas; los archivos largos permiten desplazamiento dentro de sus paneles. La comprobación local de PAY-142 devolvió `PASS: 2 requests · 1 refund`, con `refund-1` en ambas respuestas.
+
+`bun --bun run build` completó TypeScript y Vite. No se agregaron pruebas ni se ejecutó la suite, conforme al foco solicitado en la demo funcional.
+
+Se mantienen 17 minutos de contenido y tres para preguntas. No es un ensayo humano cronometrado. No se muestra un QR provisional.

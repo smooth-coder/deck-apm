@@ -49,7 +49,7 @@ describe("useSceneNavigation", () => {
     press("4");
     expect(result.current.index).toBe(3);
     press("p");
-    expect(result.current.index).toBe(4);
+    expect(result.current.index).toBe(5);
   });
 
   it("writes the current scene to the URL hash", () => {
@@ -128,7 +128,7 @@ describe("useSceneNavigation", () => {
       fireOn(button, "4");
       expect(result.current.index).toBe(3);
       fireOn(button, "p");
-      expect(result.current.index).toBe(4);
+      expect(result.current.index).toBe(5);
       host.remove();
     });
 

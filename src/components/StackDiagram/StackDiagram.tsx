@@ -72,10 +72,10 @@ export function StackDiagram() {
               <h2 className="panel__title">{selected.label}</h2>
               <p className="panel__text">{selected.definition}</p>
               <p className="panel__example">
-                <span>Lives in</span> <code>{selected.lives}</code>
+                <span>Ubicación</span> <code>{selected.lives}</code>
               </p>
-              <p className="panel__example">
-                <span>Illustrative example</span> {selected.example}
+              <p className="panel__example" lang={selected.id === "context" ? "es" : "en"}>
+                <span lang="es">Ejemplo ilustrativo</span> {selected.example}
               </p>
               <p className="panel__text panel__text--muted stack__scope">{STACK_SCOPE_NOTE}</p>
             </>

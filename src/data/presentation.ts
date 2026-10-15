@@ -1,4 +1,3 @@
-import { APM_VERSION } from "../playground/commands";
 
 export interface Scene {
   readonly id: number;
@@ -6,6 +5,7 @@ export interface Scene {
   readonly title: string;
   /** One supporting line shown under the title (max ~25 words). */
   readonly support: string;
+  readonly lang?: "es" | "en";
   /** Presenter intent. Never rendered; kept for the presenter script (docs/talk-script.md). */
   readonly goal: string;
   readonly durationMin: number;
@@ -14,50 +14,59 @@ export interface Scene {
 export const scenes: readonly Scene[] = [
   {
     id: 1,
-    title: "Your code is reproducible. Your agents aren't.",
+    title: "Entrega de software con IA y APM",
     support:
-      "A fresh clone gives you identical code. Nothing in the repo says which instructions, skills or tools the agent should have.",
-    goal: "Make the audience feel the pain of agent setup drift.",
+      "Define, versiona y comparte los agentes, habilidades y reglas de tu equipo.",
+    goal: "Presentar el tema y el resultado concreto antes del caso PAY-142; separar configuración y validación del código.",
     durationMin: 2,
   },
   {
     id: 2,
-    title: "Same repo. Same task. Four different pull requests.",
+    title: "Mismo repositorio. Distinta configuración del agente.",
     support:
-      "Each tool reads instructions from a different place. Each developer configured theirs by hand. Git records none of it.",
-    goal: "Show four agent setups producing four diverging results.",
-    durationMin: 3,
+      "Dos configuraciones ilustrativas, no una comparación de modelos. Distintas reglas y herramientas generan distintos riesgos en la revisión.",
+    goal: "Contrastar la configuración compartida con la de una sola laptop, sin prometer resultados deterministas.",
+    durationMin: 2,
   },
   {
     id: 3,
-    title: "Four kinds of agent files. Not interchangeable.",
+    title: "Reglas, procedimientos y herramientas cumplen funciones distintas.",
     support:
-      "Instructions load every session. Skills load when relevant. MCP grants tool access. Subagents get their own context.",
-    goal: "Map the layers of an agent setup that need to be managed.",
-    durationMin: 3,
+      "Las instrucciones orientan. Las habilidades describen procedimientos. MCP conecta herramientas. Nada de esto garantiza que el agente siga el flujo esperado.",
+    goal: "Explicar los tres conceptos principales en lenguaje sencillo; mencionar los subagentes como delegación.",
+    durationMin: 2,
   },
   {
     id: 4,
-    title: "Declare it. Lock it. Install it. Audit it.",
+    title: "Los agentes y habilidades del equipo, gestionados juntos.",
     support:
-      "APM applies the package-manager loop to agent files. The loop is the analogy; the contents are different.",
-    goal: "Introduce a package manager model for agent dependencies.",
+      "Tu equipo define los archivos. APM los empaqueta e instala; cada proyecto declara qué paquete utiliza.",
+    goal: "Distinguir las definiciones propias del manifiesto consumidor. Explicar propiedad, versiones y distribución.",
     durationMin: 2,
   },
   {
     id: 5,
-    title: "One command rebuilds the agent's environment.",
-    support: `Recorded run of apm-cli ${APM_VERSION}: install, lock, audit, then a CI gate that fails on drift.`,
-    goal: "Walk the recorded CLI session; the presenter drives, the audience watches.",
-    durationMin: 5,
+    title: "Centralize the team's setup.",
+    support: "Create an APM package, add your team's agents, skills and MCP configuration, then tag a version.",
+    goal: "Separate package authoring from consumption: initialize, add team-owned definitions and record a local Git version without claiming publication.",
+    lang: "en",
+    durationMin: 2,
   },
   {
     id: 6,
-    title: "Where agent context fits in your delivery pipeline.",
-    support:
-      "APM handles context, locking, integrity and the CI gate. Evals and review are yours to build.",
-    goal: "Connect reproducible agent setups to shipping software.",
+    title: "Use the team's version in your project.",
+    support: "Declare the repository in apm.yml. Install the shared setup for Claude and Copilot.",
+    goal: "Start with only the consumer manifest. Install the versioned package and inspect deployed files, lockfile and CI without showing the producer source tree.",
+    lang: "en",
     durationMin: 3,
+  },
+  {
+    id: 7,
+    title: "Configuración válida no significa reembolso correcto.",
+    support:
+      "Configurar → validar → aprobar. Dos solicitudes deben crear un solo reembolso. Después, evalúa los cambios del agente y revisa el código.",
+    goal: "Cerrar PAY-142 con una comprobación local ejecutable; explicar evaluaciones, revisión humana y adopción.",
+    durationMin: 4,
   },
 ];
 

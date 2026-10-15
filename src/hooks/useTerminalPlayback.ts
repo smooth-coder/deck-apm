@@ -23,31 +23,22 @@ const DELAY_S: Readonly<Record<TermEntry["kind"], number>> = {
   dim: 0.06,
 };
 
-/**
- * Plays an append-only list of terminal entries: commands are typed, output appears line by line.
- * Appending entries continues from where the last playback stopped; shrinking the list (reset)
- * jumps back. With prefers-reduced-motion everything is shown at once.
- */
+/** Each entry list is one command step. Replacing it starts a fresh playback from line zero. */
 export function useTerminalPlayback(entries: readonly TermEntry[]) {
   const reduced = usePrefersReducedMotion();
-  const [frame, setFrame] = useState<PlaybackFrame>({ count: reduced ? entries.length : 0, chars: 0 });
-  const frameRef = useRef(frame);
+  const [playback, setPlayback] = useState({ entries, frame: { count: 0, chars: 0 } });
   const timeline = useRef<gsap.core.Timeline | null>(null);
 
-  const commit = useCallback((next: PlaybackFrame) => {
-    frameRef.current = next;
-    setFrame(next);
-  }, []);
+  const commit = useCallback((frame: PlaybackFrame) => {
+    setPlayback({ entries, frame });
+  }, [entries]);
 
   useEffect(() => {
-    if (reduced) return;
-    const startFrom = Math.min(frameRef.current.count, entries.length);
-    if (startFrom < frameRef.current.count) commit({ count: startFrom, chars: 0 });
-    if (startFrom >= entries.length) return;
+    if (reduced || entries.length === 0) return;
 
     const tl = gsap.timeline();
     let at = 0;
-    for (let i = startFrom; i < entries.length; i += 1) {
+    for (let i = 0; i < entries.length; i += 1) {
       const entry = entries[i];
       if (!entry) continue;
       if (entry.kind === "command") {
@@ -71,8 +62,10 @@ export function useTerminalPlayback(entries: readonly TermEntry[]) {
   const skip = useCallback(() => {
     timeline.current?.kill();
     commit({ count: entries.length, chars: 0 });
-  }, [entries.length, commit]);
+  }, [entries, commit]);
 
-  const effective: PlaybackFrame = reduced ? { count: entries.length, chars: 0 } : frame;
+  const effective: PlaybackFrame = reduced
+    ? { count: entries.length, chars: 0 }
+    : playback.entries === entries ? playback.frame : { count: 0, chars: 0 };
   return { frame: effective, playing: effective.count < entries.length, skip };
 }

@@ -1,0 +1,11 @@
+name: payments-team
+version: 1.0.0
+description: Organization-owned refund reviewer, skill, rules and documentation MCP
+author: northstar-engineering
+dependencies:
+  apm: []
+  mcp:
+    - name: microsoft-learn
+      registry: false
+      transport: http
+      url: https://learn.microsoft.com/api/mcp

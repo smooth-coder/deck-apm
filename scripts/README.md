@@ -1,35 +1,50 @@
-# Recording scripts
+# Recording the shared organization repository
 
-`src/playground/recorded.ts` holds terminal output copied verbatim from a real `apm-cli` session. These scripts regenerate it.
-
-| Script | Does |
-| --- | --- |
-| `record.sh` | In a `mktemp -d` directory: creates a venv (`uv venv`), installs `apm-cli==$APM_VERSION`, runs the scripted session, writes outputs to `<tmp>/out`. Writes nothing into the project. |
-| `gen_recorded.py` | Reads `<tmp>/out` and writes `src/playground/recorded.ts`. The only step that touches the project. |
+The organization authors `examples/payments-team`: its refund reviewer, `check-refund` skill, refund rules and shared MCP endpoint configuration. The producer demo first records Git/APM initialization in an empty repository, then adds those authored definitions and versions them. The next, separate consumer demo uses `examples/payments-service/apm.yml`, which only declares project metadata, clients and `northstar-engineering/payments-team#v1.0.0`. The consumer explorer never includes the producer's source repository.
 
 ## Re-record
 
 ```sh
-pnpm record                      # runs record.sh, prints the out dir
-python3 -I scripts/gen_recorded.py /tmp/apmrec.XXXXXX/out
-pnpm test && pnpm typecheck && pnpm build
+bash scripts/record.sh
 ```
 
-`scripts/record.sh --help` and `--dry-run` change nothing. Requires `uv`, `python3` and network access. The temp directory is kept (set `KEEP_WORKDIR=0` to delete it).
+Requires `uv`, `git` and network access to install `apm-cli==0.33.0`. `APM_VERSION` defaults to that pinned version. `--help` and `--dry-run` do not mutate the project. The script captures real output and invokes `gen_recorded.py` automatically; only the generated `src/playground/recorded.ts` is written into the product. Scratch, isolated home, Git configuration, package cache and virtual environment are removed on exit, including on failure. Do not hand-edit the generated snapshot; re-record after changing example definitions.
 
-## When to re-record
+## Real Git, illustrative organization
 
-APM is pre-1.0: flags and output change between releases. Re-record when you upgrade APM, and before every talk check `apm --version` against `RECORDED_VERSION`. Bump `APM_VERSION` at the top of `record.sh` (or pass `APM_VERSION=x.y.z`), re-record, then update the copy that cites the version (`docs/apm-research.md`, README, scene 5 copy and tests that assert `0.33.0`, `10 check(s)`, `1 of 3 check(s)`). Install time and the resolved commit of unpinned transitive packages change on every run.
+`northstar-engineering` is an illustrative organization, not a repository published by this project. In an empty scratch `organization/payments-team`, the recorder runs `git init --initial-branch=main && apm init --yes` and captures the actual output, exit code and initial `apm.yml`. It then copies the team's authored files from `examples/payments-team`, including the final manifest: APM does **not** generate those agent/skill/rules/MCP definitions. A real Git add/commit/tag sequence creates `v1.0.0` and reports its commit. Git identity and commit dates are configured in the isolated environment for reproducible versioning. Finally, the recorder maps exactly `https://github.com/northstar-engineering/payments-team.git` to that **same** repository with Git `url.<file-url>.insteadOf` in a scratch-only `GIT_CONFIG_GLOBAL`. It does not change the developer's Git configuration or use private credentials.
 
-## The two hand edits in the recording
+APM resolves and installs the declared Git dependency through that alias. Its real lockfile records `resolved_ref`, `resolved_commit`, installed-file hashes and MCP configuration; the generator requires successful producer initialization/versioning and rejects a missing producer/consumer commit match or a silently local-source lockfile. The CLI's `github` source label describes the declared identity, **not evidence of a GitHub fetch or publication**. The exact alias configuration and real commit are retained in the generated snapshot. Running the illustrative consumer manifest outside this recorder requires publishing a real repository and changing the reference, or recreating the explicit alias; do not present it as a publicly downloadable package.
 
-Both are done by small inline Python snippets in `record.sh`, and both must stay explained on screen:
+## Recorded path
 
-1. Uncomment the `targets:` block. `apm init` writes it commented out. Without it (or `-t`), `apm install` exits 2 (`No harness detected`). The recording pins `copilot` and `claude`, so the install command needs no `-t`.
-2. Add `example/engineering-skills` to `dependencies.apm` without installing it. This is the failing CI case. The package is a PLACEHOLDER: `github.com/example/engineering-skills` returns 404. The manifest shape is real; the package is not. If you replace it with a real package, `apm audit --ci` may then behave differently, so re-check the output.
+| Action | Actual command / change | Expected exit |
+| --- | --- | --- |
+| Initialize empty producer | `git init --initial-branch=main && apm init --yes` | 0 |
+| Add team files | Copy the authored `examples/payments-team` definitions and final manifest | — |
+| Version producer and inspect commit | `git add . && git commit -m 'Share PAY-142 refund configuration' && git tag v1.0.0 && git rev-parse 'v1.0.0^{commit}'` | 0 |
+| Install declared repository | `apm install` | 0 |
+| Inspect dependency | `apm deps list` | 0 |
+| Clean configuration audit | `apm audit` | 0 |
+| Optional hidden-Unicode fixture | `apm audit --file src/pasted-prompt.md` | 1 |
+| Clean CI | `apm audit --ci` | 0 |
+| Deliberate manifest drift | Add `northstar-engineering/uninstalled-team#v1.0.0` without installing | — |
+| Reject unregistered dependency | `apm audit --ci` | 1 |
+| Reject out-of-sync lockfile | `apm install --frozen` | 1 |
+| Restore manifest and re-run CI | `apm audit --ci` | 0; 10 checks |
 
-The fixture `src/pasted-prompt.md` (text with U+200B and U+202E) is written by `printf` in the script; it is a demo fixture, not something `apm install` produces.
+The uninstalled repository is deliberately absent from the lockfile; the failure is reference consistency, not a fabricated network/authentication error. Recovery removes that unintended declaration and restores the captured installed manifest. The Unicode fixture is authored by the recorder, not generated by APM; it holds actual U+200B/U+202E, displayed as markers by the viewer.
 
-## TODO
+`PRODUCER_INIT_COMMAND` and `PRODUCER_VERSION_COMMAND` retain the exact command strings executed from the producer repository. `OUT_PRODUCER_INIT`/`OUT_PRODUCER_VERSION` retain combined stdout/stderr, and `PRODUCER_EXIT` contains numeric `init`/`version` exit codes. `PRODUCER_INIT_MANIFEST` is the unmodified initialization result; `TEAM_SOURCE_FILES` is the final repository content after adding the authored files, not an init result. Existing consumer captures and their exit-code invariants remain separate.
 
-- Replace `public/qr-code.svg` with a real QR code once the deployed URL exists, then decide whether to show it on scene 6 again (the visible placeholder was removed from the slide).
+## What the MCP example shares
+
+The **organization package's** `apm.yml` declares the real public [Microsoft Learn MCP endpoint](https://learn.microsoft.com/en-us/training/support/mcp), with `registry: false`, `transport: http`, and `url: https://learn.microsoft.com/api/mcp`. It supplies public platform documentation for the PAY-142 reviewer; it is not a payment-provider integration. Learn requires no credentials.
+
+APM 0.33.0 trusts self-defined MCP from a **direct** package dependency: the recording preserves `Trusting direct dependency MCP`. The actual command is plain `apm install`; `--trust-transitive-mcp` is not required here. A self-defined MCP contributed by an **indirect** dependency is skipped unless explicitly trusted with that flag or declared directly. See [APM's producer MCP documentation](https://microsoft.github.io/apm/producer/author-primitives/mcp-as-primitive/). This trust decision is configuration-level, not runtime authorization.
+
+The exercised run writes `.github/mcp.json` for Copilot CLI and `.mcp.json` for Claude Code, and captures their actual bytes beside the deployed agent/skill/rules. It does not claim a `.vscode/mcp.json` write. Client approval, connecting the client and credentials/authorization for any private service remain the individual developer's responsibility. Never commit tokens to the organization package; APM's environment/header substitution behavior varies by client.
+
+## Evidence limits
+
+No model, agent procedure, MCP request or payment provider is executed. Configuration deployment does not prove semantic correctness, safe instructions, runtime sandboxing or payment permissions. The consumer has no Git remote, so the real org-policy lookup warning is preserved; organization policy enforcement is not demonstrated. Git-host authentication, remote publication and cross-machine installation are not exercised. The example definitions are teaching content, not registered skills for the keynote project's coding assistant.

@@ -14,6 +14,7 @@ export function SceneView({ scene, compact = false, children }: Props) {
     <section
       className={compact ? "scene scene--compact" : "scene"}
       aria-labelledby={`scene-title-${scene.id}`}
+      lang={scene.lang}
     >
       <header className="scene__header">
         <h1 id={`scene-title-${scene.id}`} className="scene__title">

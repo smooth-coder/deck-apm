@@ -11,59 +11,59 @@ export interface StackNode {
 
 export const agentNode: StackNode = {
   id: "agent",
-  label: "AI Agent",
+  label: "Agente de IA",
   definition:
-    "The model that reads the task and edits your repo. Everything else on this slide is what you give it.",
-  lives: "(the tool: Claude Code, Copilot, Cursor, Codex)",
+    "El modelo y la herramienta que ejecutan la tarea. La configuración es una entrada, no todo el entorno de ejecución.",
+  lives: "(herramienta: Claude Code, Copilot, Cursor, Codex)",
   example: "Task: Add a refund endpoint to the payment service.",
 };
 
 export const capabilityNodes: readonly StackNode[] = [
   {
     id: "instructions",
-    label: "Instructions",
+    label: "Instrucciones",
     definition:
-      "Plain-text rules loaded into context at session start. Guidance only: the model can still ignore them.",
-    lives: "CLAUDE.md · AGENTS.md · .github/copilot-instructions.md · .cursor/rules/*.mdc",
-    example: "Use pnpm. Errors extend AppError. Never edit generated files.",
+      "Reglas aportadas como contexto. Orientan al modelo; no imponen que el resultado sea correcto.",
+    lives: "CLAUDE.md · AGENTS.md",
+    example: "Return Result<T,E>. Refund requests require an idempotency key.",
   },
   {
     id: "skills",
-    label: "Skills",
-    definition: "A named procedure the agent loads only when its description matches the task.",
+    label: "Procedimientos",
+    definition: "Una habilidad (skill) reutilizable que se elige para una tarea. Tenerla disponible no demuestra que se haya ejecutado.",
     lives: ".claude/skills/write-tests/SKILL.md",
-    example: "description: Add a unit test the way this team does it. Body: numbered steps.",
+    example: "Send the same refund request twice. Assert one refund, not two.",
   },
   {
     id: "mcp",
     label: "MCP",
     definition:
-      "A server that gives the agent tools and data beyond the repo: it can read and act on external systems.",
+      "El protocolo MCP conecta al agente con herramientas y datos. El acceso al servidor requiere permisos y credenciales.",
     lives: ".mcp.json (Claude Code) · .cursor/mcp.json (Cursor)",
-    example: '{ "mcpServers": { "tracker": { "type": "http", "url": "https://tracker.example.com/mcp" } } }',
+    example: "Read PAY-142: retrying a request must not refund the payment twice.",
   },
   {
     id: "subagents",
-    label: "Subagents",
+    label: "Subagentes",
     definition:
-      "A specialist the main agent hands work to, with its own prompt and its own tool allow-list.",
+      "Delegación opcional: un especialista con sus propias instrucciones, contexto y permisos de herramientas.",
     lives: ".claude/agents/code-reviewer.md",
-    example: "tools: Read, Grep, Glob. It can review the diff but cannot edit files.",
+    example: "Read-only reviewer: inspect refund behavior and the retry test.",
   },
 ];
 
 export const contextNode: StackNode = {
   id: "context",
-  label: "Agent Context",
+  label: "Contexto del agente",
   definition:
-    "What the model actually receives: your repo plus whatever the files above put in front of it.",
-  lives: "Built at runtime from all of the above, differently per tool and per laptop",
-  example: "Change one file, or one version of it, and the same prompt produces a different pull request.",
+    "Lo que el modelo recibe durante la ejecución: tarea, conversación y resultados seleccionados de las herramientas.",
+  lives: "Se arma durante la ejecución; un lockfile de APM no lo registra por completo",
+  example: "Mismos archivos instalados ≠ mismo resultado. También influyen el modelo, la conversación, los permisos y los datos externos.",
 };
 
 export const STACK_MESSAGE =
-  "If any one file differs, the agent's environment differs. That is the dependency problem.";
+  "APM gestiona la configuración instalada. Las pruebas y evaluaciones validan el comportamiento.";
 
 /** Shown with every node: most paths are Claude Code's; other tools are named where they differ. */
 export const STACK_SCOPE_NOTE =
-  "Paths are Claude Code's unless another tool is named. Examples are illustrative.";
+  "Las rutas son de Claude Code, salvo que se indique otra herramienta. Los ejemplos son ilustrativos.";

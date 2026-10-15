@@ -1,19 +1,16 @@
 import { useState } from "react";
 import {
-  CONCLUSION,
+  BRIDGE,
+  COSTS_TITLE,
   developers,
   ILLUSTRATIVE_LABEL,
+  LOCATION_LABEL,
+  OUTPUT_COLUMNS,
   SETUPS_LABEL,
   sharedTask,
-  type DeveloperSetup,
+  teamCosts,
+  WHY_LABEL,
 } from "../../data/agentConfigs";
-
-const OUTPUT_FIELDS: readonly { key: keyof DeveloperSetup["output"]; label: string }[] = [
-  { key: "conventions", label: "Conventions" },
-  { key: "tests", label: "Tests" },
-  { key: "architecture", label: "Architecture" },
-  { key: "tools", label: "Tool access" },
-];
 
 export function DeveloperComparison() {
   const [selectedId, setSelectedId] = useState<string>(developers[0]?.id ?? "");
@@ -40,49 +37,74 @@ export function DeveloperComparison() {
         ))}
       </ul>
 
-      {/* Once the outputs are shown the setup panel gives way to them so everything fits one view. */}
+      {/* Comparison replaces setup details so the audience has one reading task at a time. */}
       {selected && !ran ? (
         <div className="panel" aria-live="polite">
           <h2 className="panel__title">
-            {selected.name}&apos;s setup ({selected.agent})
+            Configuración de {selected.name} ({selected.agent})
           </h2>
-          <ul className="panel__list">
+          <ul className="devs__config">
             {selected.config.map((item) => (
-              <li key={item}>{item}</li>
+              <li key={item.text}>
+                <span className={`where where--${item.where}`}>{LOCATION_LABEL[item.where]}</span>
+                <code>{item.text}</code>
+              </li>
             ))}
           </ul>
         </div>
       ) : null}
 
       <div className="controls">
-        <button type="button" className="btn btn--primary" onClick={() => setRan(true)}>
-          Run Same Task
+        <button type="button" className="btn btn--primary" onClick={() => setRan(!ran)}>
+          {ran ? "Volver a las configuraciones" : "Comparar riesgos"}
         </button>
         <span className="devs__task">{sharedTask}</span>
         {ran ? <p className="badge devs__badge">{ILLUSTRATIVE_LABEL}</p> : null}
       </div>
 
       {ran ? (
-        <section className="fade-in" aria-label="Task outputs">
-          <div className="devs__outputs">
-            {developers.map((dev) => (
-              <article key={dev.id} className="output">
-                <h3 className="output__title">
-                  {dev.name} <span>({dev.agent})</span>
-                </h3>
-                <dl>
-                  {OUTPUT_FIELDS.map(({ key, label }) => (
-                    <div key={key}>
-                      <dt>{label}</dt>
-                      <dd>{dev.output[key]}</dd>
-                    </div>
+        <section className="fade-in devs__result" aria-label="Comparación de configuraciones">
+          <table className="prs">
+            <thead>
+              <tr>
+                <th scope="col">Configuración</th>
+                {OUTPUT_COLUMNS.map((c) => (
+                  <th key={c.key} scope="col">
+                    {c.label}
+                  </th>
+                ))}
+                <th scope="col">{WHY_LABEL}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {developers.map((dev) => (
+                <tr key={dev.id}>
+                  <th scope="row">
+                    {dev.name} <span>{dev.agent}</span>
+                  </th>
+                  {OUTPUT_COLUMNS.map((c) => (
+                    <td key={c.key} data-label={c.label}>
+                      {dev.output[c.key]}
+                    </td>
                   ))}
-                </dl>
-                <p className="output__why">{dev.why}</p>
-              </article>
+                  <td className="prs__why" data-label={WHY_LABEL}>
+                    {dev.why}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <h2 className="costs__title">{COSTS_TITLE}</h2>
+          <ul className="costs">
+            {teamCosts.map((cost) => (
+              <li key={cost.title}>
+                <strong>{cost.title}</strong>
+                <span>{cost.detail}</span>
+              </li>
             ))}
-          </div>
-          <p className="conclusion">{CONCLUSION}</p>
+          </ul>
+          <p className="conclusion bridge">{BRIDGE}</p>
         </section>
       ) : null}
     </div>

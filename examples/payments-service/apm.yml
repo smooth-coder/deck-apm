@@ -1,0 +1,6 @@
+name: payments-service
+version: 1.0.0
+targets: [copilot, claude]
+dependencies:
+  apm:
+    - northstar-engineering/payments-team#v1.0.0

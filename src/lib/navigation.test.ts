@@ -60,9 +60,9 @@ describe("keyToAction", () => {
     expect(keyToAction("7", 6)).toBeNull();
     expect(keyToAction("0", 6)).toBeNull();
   });
-  it("maps P to the playground (scene 5) case-insensitively", () => {
-    expect(keyToAction("p", 6)).toEqual({ type: "goto", index: 4 });
-    expect(keyToAction("P", 6)).toEqual({ type: "goto", index: 4 });
+  it("maps P to the consumer demo (scene 6) case-insensitively", () => {
+    expect(keyToAction("p", 7)).toEqual({ type: "goto", index: 5 });
+    expect(keyToAction("P", 7)).toEqual({ type: "goto", index: 5 });
   });
   it("maps F to fullscreen", () => {
     expect(keyToAction("f", 6)).toEqual({ type: "fullscreen" });

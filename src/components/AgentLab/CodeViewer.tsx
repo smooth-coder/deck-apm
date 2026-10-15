@@ -31,12 +31,13 @@ export function CodeViewer({ tabs, file, onSelect }: Props) {
             role="tab"
             className="lab-viewer__tab"
             aria-selected={path === file?.path}
+            title={path}
             onClick={() => onSelect(path)}
           >
             {path.split("/").pop()}
           </button>
         ))}
-        <span className="lab-viewer__ro">read-only</span>
+        <span className="lab-viewer__path" title={file?.path}>{file?.path}</span>
       </div>
       <div ref={bodyRef} className="lab-viewer__body" role="tabpanel">
         {file?.content !== undefined ? (

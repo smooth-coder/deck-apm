@@ -1,7 +1,21 @@
+/** Where one piece of a developer's agent setup lives. */
+export type ConfigLocation = "repo" | "local" | "missing";
+
+export interface ConfigItem {
+  readonly text: string;
+  readonly where: ConfigLocation;
+}
+
+export const LOCATION_LABEL: Readonly<Record<ConfigLocation, string>> = {
+  repo: "En el repositorio",
+  local: "Solo en esta laptop",
+  missing: "Sin configurar",
+};
+
+/** Review risks inferred from these illustrative setups, not measured agent outputs. */
 export interface TaskOutput {
-  readonly conventions: string;
+  readonly errors: string;
   readonly tests: string;
-  readonly architecture: string;
   readonly tools: string;
 }
 
@@ -10,93 +24,83 @@ export interface DeveloperSetup {
   readonly name: string;
   readonly agent: string;
   readonly summary: string;
-  readonly config: readonly string[];
+  readonly config: readonly ConfigItem[];
   readonly output: TaskOutput;
-  /** One line (max ~12 words) linking the setup to the output. */
+  /** One line linking a configuration difference to a review risk. */
   readonly why: string;
 }
 
-export const sharedTask = 'Same task for everyone: "Add a refund endpoint to the payment service."';
+export const sharedTask = 'PAY-142: "Agregar un endpoint de reembolso. Un reintento no debe reembolsar dos veces."';
 
-export const ILLUSTRATIVE_LABEL = "Illustrative setups and outputs, not real model runs";
+export const ILLUSTRATIVE_LABEL = "Riesgos ilustrativos · no son resultados medidos de modelos";
 
-/** Always visible: the setups are plausible but invented, the outputs are written by hand. */
-export const SETUPS_LABEL = "Illustrative setups: invented to show the shape of the problem, not real model runs";
+export const SETUPS_LABEL = "Misma herramienta en ambos ejemplos · no es un experimento causal";
 
-export const CONCLUSION =
-  "Four pull requests, four conventions. Nothing in git says which agent context produced which.";
+export const OUTPUT_COLUMNS: readonly { key: keyof TaskOutput; label: string }[] = [
+  { key: "errors", label: "Reglas disponibles" },
+  { key: "tests", label: "Prueba de reintentos" },
+  { key: "tools", label: "Acceso al ticket" },
+];
+
+export const WHY_LABEL = "Riesgo en revisión";
 
 export const developers: readonly DeveloperSetup[] = [
   {
     id: "alice",
     name: "Alice",
     agent: "Claude Code",
-    summary: "CLAUDE.md + her own skill",
+    summary: "Configuración compartida y revisada",
     config: [
-      "CLAUDE.md: errors return Result<T,E>, never throw",
-      "~/.claude/skills/write-tests/SKILL.md: tests before handler (on her laptop only)",
-      "No .mcp.json: no ticket access",
+      { text: "CLAUDE.md: devolver Result<T,E>; exigir clave de idempotencia", where: "repo" },
+      { text: ".claude/skills/write-tests/SKILL.md: comprobar solicitudes duplicadas", where: "repo" },
+      { text: ".mcp.json: conexión al gestor de tickets; requiere autorización personal", where: "repo" },
     ],
     output: {
-      conventions: "return err(new RefundError()); named exports",
-      tests: "refund.test.ts written first",
-      architecture: "RefundService behind a PaymentGateway port",
-      tools: "Files and shell. Cannot read the ticket.",
+      errors: "Convención actual: Result",
+      tests: "Comprobación de duplicados",
+      tools: "Configurado; requiere autorización",
     },
-    why: "Her skill is not in the repo.",
+    why: "La configuración se puede revisar; el resultado necesita pruebas.",
   },
   {
     id: "bob",
     name: "Bob",
-    agent: "Cursor",
-    summary: ".cursor/rules from another project",
+    agent: "Claude Code",
+    summary: "Reglas copiadas en una sola laptop",
     config: [
-      ".cursor/rules/api.mdc copied months ago: default exports, throw on error",
-      "No team test procedure configured",
-      "No MCP servers (.cursor/mcp.json absent)",
+      { text: "~/.claude/CLAUDE.md: lanzar excepciones; copiado de otro proyecto", where: "local" },
+      { text: "Sin procedimiento compartido para solicitudes duplicadas", where: "missing" },
+      { text: "Sin conexión al gestor de tickets", where: "missing" },
     ],
     output: {
-      conventions: "throw new Error('refund failed'); default export",
-      tests: "None generated",
-      architecture: "Refund logic inline in the route handler",
-      tools: "Cannot read the ticket.",
+      errors: "Convención ajena: throw",
+      tests: "Sin procedimiento compartido",
+      tools: "Sin configurar",
     },
-    why: "The rule file describes a different codebase.",
-  },
-  {
-    id: "carol",
-    name: "Carol",
-    agent: "Copilot",
-    summary: "copilot-instructions.md + local MCP",
-    config: [
-      ".github/copilot-instructions.md: six generic lines",
-      "MCP servers for tracker and staging DB, set up in her own editor, not in the repo",
-      "No shared skill for tests",
-    ],
-    output: {
-      conventions: "Mixed styles copied from nearby files",
-      tests: "One happy-path test",
-      architecture: "Handler queries the staging database directly",
-      tools: "Reads the ticket. Writes SQL against staging.",
-    },
-    why: "Her tools differ from everyone's, and nobody reviewed them.",
-  },
-  {
-    id: "dave",
-    name: "Dave",
-    agent: "Codex",
-    summary: "AGENTS.md, two releases old",
-    config: [
-      "AGENTS.md at repo root, last edited two releases ago",
-      "Names the old test framework and the old layering",
-      "No MCP servers",
-    ],
-    output: {
-      conventions: "snake_case names; the codebase moved to camelCase",
-      tests: "Jest tests; the team moved to Vitest",
-      architecture: "Old controller/model layering",
-      tools: "Cannot read the ticket.",
-    },
-    why: "The file is committed, so it is trusted, and it is stale.",
+    why: "La revisión debe reconstruir las reglas y criterios faltantes.",
   },
 ];
+
+export const COSTS_TITLE = "Lo que esto le cuesta al equipo";
+
+export interface TeamCost {
+  readonly title: string;
+  readonly detail: string;
+}
+
+export const teamCosts: readonly TeamCost[] = [
+  {
+    title: "Volvemos a discutir convenciones",
+    detail: "¿Result o throw? La revisión repite decisiones ya acordadas.",
+  },
+  {
+    title: "Fallan las comprobaciones",
+    detail: "Un error de reintentos llega a revisión sin una prueba compartida.",
+  },
+  {
+    title: "La incorporación depende de otra persona",
+    detail: "Cada persona nueva copia una configuración a mano o empieza sin ella.",
+  },
+];
+
+export const BRIDGE = "Compartir archivos reduce diferencias de configuración. No garantiza código idéntico.";
