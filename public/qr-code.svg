@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- TODO: placeholder only. The real URL is unknown until the app is deployed.
+     Replace this file with a QR code generated from the final public URL.
+     Do not generate a fake QR that points nowhere. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="QR code placeholder">
+  <rect width="200" height="200" fill="#ffffff"/>
+  <rect x="8" y="8" width="184" height="184" fill="none" stroke="#0b0d12" stroke-width="4" stroke-dasharray="12 8"/>
+  <text x="100" y="92" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="700" fill="#0b0d12">QR CODE</text>
+  <text x="100" y="116" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#0b0d12">placeholder</text>
+</svg>
