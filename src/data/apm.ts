@@ -19,28 +19,14 @@ export const analogyRows: readonly AnalogyRow[] = [
     outcome: "Acordar la configuración en un solo lugar",
     traditional: "package.json",
     agentic: "apm.yml",
-    note: "La organización versiona agentes, habilidades, reglas y configuración MCP en un repositorio central. Cada proyecto declara la referencia del paquete en su apm.yml; no redefine su contenido.",
-  },
-  {
-    id: "lockfile",
-    outcome: "Registrar las versiones revisadas",
-    traditional: "package-lock.json",
-    agentic: "apm.lock.yaml",
-    note: "Registra el commit Git resuelto, las huellas de los archivos y la configuración MCP. La demo usa un repositorio Git etiquetado local mediante un alias aislado; no una publicación en GitHub.",
+    note: "El equipo es dueño de las definiciones (agentes, habilidades, reglas y MCP) y publica una versión. Cada proyecto declara en su apm.yml qué versión usa; no redefine su contenido.",
   },
   {
     id: "install",
-    outcome: "Preparar otro entorno sin copiar carpetas",
+    outcome: "Preparar a una persona nueva sin copiar carpetas",
     traditional: "npm install",
     agentic: "apm install",
-    note: "Instala las definiciones compartidas en los clientes elegidos. APM confía en la configuración MCP de una dependencia directa; la aprobación del cliente y las credenciales de servicios privados siguen siendo personales.",
-  },
-  {
-    id: "ci",
-    outcome: "Detectar inconsistencias antes de integrar cambios",
-    traditional: "npm ci",
-    agentic: "apm install --frozen",
-    note: "Si cambia la lista de paquetes sin actualizar el lockfile, CI rechaza la inconsistencia. Corrige la configuración antes de integrar; la calidad del código se comprueba aparte.",
+    note: "Instala las definiciones de la versión elegida en los clientes del proyecto. Todas las personas parten de la misma configuración.",
   },
 ];
 

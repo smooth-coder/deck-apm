@@ -56,7 +56,7 @@ export function DeveloperComparison() {
 
       <div className="controls">
         <button type="button" className="btn btn--primary" onClick={() => setRan(!ran)}>
-          {ran ? "Volver a las configuraciones" : "Comparar riesgos"}
+          {ran ? "Volver a las configuraciones" : "Comparar configuraciones"}
         </button>
         <span className="devs__task">{sharedTask}</span>
         {ran ? <p className="badge devs__badge">{ILLUSTRATIVE_LABEL}</p> : null}

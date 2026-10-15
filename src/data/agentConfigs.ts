@@ -12,7 +12,7 @@ export const LOCATION_LABEL: Readonly<Record<ConfigLocation, string>> = {
   missing: "Sin configurar",
 };
 
-/** Review risks inferred from these illustrative setups, not measured agent outputs. */
+/** What each illustrative setup makes available to the agent. */
 export interface TaskOutput {
   readonly errors: string;
   readonly tests: string;
@@ -30,37 +30,37 @@ export interface DeveloperSetup {
   readonly why: string;
 }
 
-export const sharedTask = 'PAY-142: "Agregar un endpoint de reembolso. Un reintento no debe reembolsar dos veces."';
+export const sharedTask = 'Misma tarea: "Agregar un endpoint de escritura al servicio de pagos."';
 
-export const ILLUSTRATIVE_LABEL = "Riesgos ilustrativos · no son resultados medidos de modelos";
+export const ILLUSTRATIVE_LABEL = "Lo que cada agente tiene disponible";
 
-export const SETUPS_LABEL = "Misma herramienta en ambos ejemplos · no es un experimento causal";
+export const SETUPS_LABEL = "Misma herramienta en ambos casos: Claude Code";
 
 export const OUTPUT_COLUMNS: readonly { key: keyof TaskOutput; label: string }[] = [
   { key: "errors", label: "Reglas disponibles" },
-  { key: "tests", label: "Prueba de reintentos" },
-  { key: "tools", label: "Acceso al ticket" },
+  { key: "tests", label: "Procedimiento de pruebas" },
+  { key: "tools", label: "Conexión MCP" },
 ];
 
-export const WHY_LABEL = "Riesgo en revisión";
+export const WHY_LABEL = "Consecuencia para el equipo";
 
 export const developers: readonly DeveloperSetup[] = [
   {
     id: "alice",
     name: "Alice",
     agent: "Claude Code",
-    summary: "Configuración compartida y revisada",
+    summary: "Configuración en el repositorio",
     config: [
       { text: "CLAUDE.md: devolver Result<T,E>; exigir clave de idempotencia", where: "repo" },
       { text: ".claude/skills/write-tests/SKILL.md: comprobar solicitudes duplicadas", where: "repo" },
-      { text: ".mcp.json: conexión al gestor de tickets; requiere autorización personal", where: "repo" },
+      { text: ".mcp.json: conexión a la documentación del equipo; requiere autorización personal", where: "repo" },
     ],
     output: {
       errors: "Convención actual: Result",
-      tests: "Comprobación de duplicados",
-      tools: "Configurado; requiere autorización",
+      tests: "Procedimiento compartido",
+      tools: "Documentación del equipo",
     },
-    why: "La configuración se puede revisar; el resultado necesita pruebas.",
+    why: "La configuración está en el repositorio y se puede revisar.",
   },
   {
     id: "bob",
@@ -69,15 +69,15 @@ export const developers: readonly DeveloperSetup[] = [
     summary: "Reglas copiadas en una sola laptop",
     config: [
       { text: "~/.claude/CLAUDE.md: lanzar excepciones; copiado de otro proyecto", where: "local" },
-      { text: "Sin procedimiento compartido para solicitudes duplicadas", where: "missing" },
-      { text: "Sin conexión al gestor de tickets", where: "missing" },
+      { text: "Sin procedimiento compartido de pruebas", where: "missing" },
+      { text: "Sin conexión a la documentación del equipo", where: "missing" },
     ],
     output: {
       errors: "Convención ajena: throw",
-      tests: "Sin procedimiento compartido",
+      tests: "Sin procedimiento",
       tools: "Sin configurar",
     },
-    why: "La revisión debe reconstruir las reglas y criterios faltantes.",
+    why: "Cada revisión debe reconstruir las reglas y procedimientos que faltan.",
   },
 ];
 
@@ -94,8 +94,8 @@ export const teamCosts: readonly TeamCost[] = [
     detail: "¿Result o throw? La revisión repite decisiones ya acordadas.",
   },
   {
-    title: "Fallan las comprobaciones",
-    detail: "Un error de reintentos llega a revisión sin una prueba compartida.",
+    title: "Se omiten procedimientos",
+    detail: "Cada persona decide qué comprobaciones ejecuta su agente.",
   },
   {
     title: "La incorporación depende de otra persona",
@@ -103,4 +103,4 @@ export const teamCosts: readonly TeamCost[] = [
   },
 ];
 
-export const BRIDGE = "Compartir archivos reduce diferencias de configuración. No garantiza código idéntico.";
+export const BRIDGE = "La configuración del equipo debe vivir en un solo lugar, con una versión.";

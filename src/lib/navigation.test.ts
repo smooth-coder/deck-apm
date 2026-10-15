@@ -54,15 +54,17 @@ describe("keyToAction", () => {
   });
   it("maps number keys to scenes", () => {
     expect(keyToAction("1", 6)).toEqual({ type: "goto", index: 0 });
+    expect(keyToAction("5", 6)).toEqual({ type: "goto", index: 4 });
     expect(keyToAction("6", 6)).toEqual({ type: "goto", index: 5 });
+    expect(keyToAction("5", 6)).toEqual({ type: "goto", index: 4 });
   });
   it("ignores number keys beyond the scene count", () => {
     expect(keyToAction("7", 6)).toBeNull();
     expect(keyToAction("0", 6)).toBeNull();
   });
-  it("maps P to the consumer demo (scene 6) case-insensitively", () => {
-    expect(keyToAction("p", 7)).toEqual({ type: "goto", index: 5 });
-    expect(keyToAction("P", 7)).toEqual({ type: "goto", index: 5 });
+  it("maps P to the consumer demo (scene 5) case-insensitively", () => {
+    expect(keyToAction("p", 6)).toEqual({ type: "goto", index: 4 });
+    expect(keyToAction("P", 6)).toEqual({ type: "goto", index: 4 });
   });
   it("maps F to fullscreen", () => {
     expect(keyToAction("f", 6)).toEqual({ type: "fullscreen" });

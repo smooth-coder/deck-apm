@@ -10,20 +10,17 @@ export interface TerminalLine {
 /** Badge shown on the terminal: the session is staged, not a real run. */
 export const HOOK_BADGE = "Terminal ilustrativa · observaciones en rojo";
 
-/**
- * Illustrative PAY-142 review: missing configuration is a risk, not proof of causality.
- * Keep every line visible so the presenter can return to the refund invariant at the close.
- */
+/** Illustrative onboarding: a new developer's code runs, but the agent lacks the team's context. */
 export const hookLines: readonly TerminalLine[] = [
   { kind: "command", text: "$ git clone acme/payments-service" },
-  { kind: "command", text: "$ npm ci" },
-  { kind: "success", text: "✓ Installed from package-lock.json" },
-  { kind: "command", text: '$ claude "add a refund endpoint"' },
-  { kind: "info", text: "● Wrote src/routes/refund.ts. Done." },
+  { kind: "command", text: "$ npm ci && npm test" },
+  { kind: "success", text: "✓ Installed from package-lock.json · tests pass" },
+  { kind: "command", text: '$ claude "add a payments endpoint"' },
+  { kind: "info", text: "● Wrote src/routes/payments.ts. Done." },
   { kind: "error", text: "✗ Throws; team returns Result<T,E>", ref: 1 },
-  { kind: "error", text: "✗ No idempotency key: double refunds", ref: 1 },
-  { kind: "error", text: "✗ No tests written", ref: 2 },
-  { kind: "error", text: "✗ Never read ticket PAY-142", ref: 3 },
+  { kind: "error", text: "✗ No idempotency key on a write endpoint", ref: 1 },
+  { kind: "error", text: "✗ Team test procedure not available", ref: 2 },
+  { kind: "error", text: "✗ Not connected to the team's docs tools", ref: 3 },
 ];
 
 export interface MissingPiece {
@@ -53,14 +50,14 @@ export const missingPieces: readonly MissingPiece[] = [
     name: "Procedimiento (skill)",
     file: ".claude/skills/write-tests/SKILL.md",
     what: "Un procedimiento reutilizable que se carga cuando corresponde.",
-    effect: "Describir la prueba de reintentos.",
+    effect: "Describir cómo se prueban los reintentos.",
   },
   {
     n: 3,
     name: "Servidor MCP",
     file: ".mcp.json",
     what: "Conecta herramientas; requiere credenciales y autorización.",
-    effect: "Permitir leer PAY-142, no garantizar su lectura.",
+    effect: "Permitir consultar la documentación del equipo.",
   },
   {
     n: 4,
@@ -82,6 +79,6 @@ export const pieceStage = (i: number): number => hookLines.length + 1 + i;
 export const QUOTE_STAGE = hookLines.length + missingPieces.length + 1;
 
 export const HOOK_QUOTE_LINES: readonly [string, string] = [
-  "Versiona la configuración.",
-  "Valida el reembolso, no solo la configuración.",
+  "¿Cómo compartimos y versionamos la configuración",
+  "sin reconstruirla a mano para cada persona?",
 ];
